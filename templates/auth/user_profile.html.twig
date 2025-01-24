@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+
+{% block body %}
+    <div class="container">
+    <h1>Complete Your Profile</h1>
+    
+    {{ form_start(form) }}
+        <div>
+            {{ form_label(form.first_name) }}
+            {{ form_widget(form.first_name) }}
+            {{ form_errors(form.first_name) }}
+        </div>
+
+        <div>
+            {{ form_label(form.last_name) }}
+            {{ form_widget(form.last_name) }}
+            {{ form_errors(form.last_name) }}
+        </div>
+
+        <div>
+            {{ form_label(form.phone) }}
+            {{ form_widget(form.phone) }}
+            {{ form_errors(form.phone) }}
+        </div>
+
+        <div>
+            {{ form_label(form.address) }}
+            {{ form_widget(form.address) }}
+            {{ form_errors(form.address) }}
+        </div>
+
+        <div>
+            {{ form_label(form.date_of_birth) }}
+            {{ form_widget(form.date_of_birth) }}
+            {{ form_errors(form.date_of_birth) }}
+        </div>
+
+        <button type="submit">Submit Profile</button>
+    {{ form_end(form) }}
+    </div>
+{% endblock %}

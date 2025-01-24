@@ -1,0 +1,9 @@
+services:
+    App\:
+        resource: '../../src/'
+        exclude: '../../src/{DependencyInjection,Entity,Tests,Kernel.php}'
+
+    App\Service\UserWorkflowService:
+        arguments:
+            $userRegistrationStateMachine: '@state_machine.user_registration'
+            $em: '@doctrine.orm.entity_manager'

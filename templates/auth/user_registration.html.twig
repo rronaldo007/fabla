@@ -1,0 +1,12 @@
+
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1>Complete Your Profile</h1>
+    {{ form_start(form) }}
+    {{ form_widget(form) }}
+    <button type="submit">Submit</button>
+    {{ form_end(form) }}
+</div>
+{% endblock %}
