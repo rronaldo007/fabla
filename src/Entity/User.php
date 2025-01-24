@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -23,11 +25,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
-    #[ORM\Column]
-    private ?bool $is_active = null;
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $is_active = false;
 
-    #[ORM\Column]
-    private ?bool $is_validated = null;
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private ?bool $is_validated = false;
 
     #[ORM\ManyToOne(targetEntity: Role::class, inversedBy: 'users')]
     #[ORM\JoinColumn(nullable: false)]
@@ -36,8 +38,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: UserProfile::class, cascade: ['persist', 'remove'])]
     private ?UserProfile $userProfile = null;
 
+    /**
+     * Stores the current workflow state for this user (e.g. "new", "email_sent", "email_validated", etc.)
+     */
     #[ORM\Column(type: 'string', length: 50)]
     private string $currentPlace = 'new';
+
+    /**
+     * A random token for email verification (nullable because it may not exist after validation).
+     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $validationToken = null;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $email_validated = false;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: RegisterWorkflow::class, cascade: ['persist', 'remove'])]
+    private Collection $registerWorkflows;
+
+    public function __construct()
+    {
+        $this->registerWorkflows = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -52,7 +74,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): static
     {
         $this->email = $email;
-
         return $this;
     }
 
@@ -64,7 +85,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): static
     {
         $this->password = $password;
-
         return $this;
     }
 
@@ -76,7 +96,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsActive(bool $is_active): static
     {
         $this->is_active = $is_active;
-
         return $this;
     }
 
@@ -88,7 +107,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsValidated(bool $is_validated): static
     {
         $this->is_validated = $is_validated;
-
         return $this;
     }
 
@@ -100,19 +118,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRole(Role $role): static
     {
         $this->role = $role;
-
-        return $this;
-    }
-
-    public function getCurrentPlace(): string
-    {
-        return $this->currentPlace;
-    }
-
-    public function setCurrentPlace(string $currentPlace): self
-    {
-        $this->currentPlace = $currentPlace;
-
         return $this;
     }
 
@@ -134,30 +139,88 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         $this->userProfile = $userProfile;
+        return $this;
+    }
 
+    public function getCurrentPlace(): string
+    {
+        return $this->currentPlace;
+    }
+
+    public function setCurrentPlace(string $currentPlace): self
+    {
+        $this->currentPlace = $currentPlace;
         return $this;
     }
 
     /**
-     * @see UserInterface
+     * Returns the user's roles (e.g., ["ROLE_CANDIDATE"]).
      */
     public function getRoles(): array
     {
         return [$this->role->getName()];
     }
 
-    /**
-     * @see UserInterface
-     */
     public function getUserIdentifier(): string
     {
         return $this->email;
     }
-     /**
-     * @see UserInterface
-     */
+
     public function eraseCredentials(): void
     {
-        // If you store any temporary, sensitive data on the user, clear it here
+        // No sensitive data to erase right now
     }
+
+    /**
+     * Get the current validation token (if any).
+     */
+    public function getValidationToken(): ?string
+    {
+        return $this->validationToken;
+    }
+
+    /**
+     * Set the validation token manually.
+     */
+    public function setValidationToken(?string $validationToken): self
+    {
+        $this->validationToken = $validationToken;
+        return $this;
+    }
+
+    /**
+     * Generate a new random token for email validation.
+     *
+     * Example: sets validationToken to a 32-character hex string.
+     */
+    public function generateValidationToken(): self
+    {
+        $this->validationToken = bin2hex(random_bytes(16));
+        return $this;
+    }
+
+    public function isEmailValidated(): bool
+    {
+        return $this->email_validated;
+    }
+
+    public function setEmailValidated(bool $emailValidated): self
+    {
+        $this->email_validated = $emailValidated;
+        return $this;
+    }
+
+    public function getRegisterWorkflows(): Collection
+    {
+        return $this->registerWorkflows;
+    }
+
+    public function addRegisterWorkflow(RegisterWorkflow $workflow): self
+    {
+        if (!$this->registerWorkflows->contains($workflow)) {
+            $this->registerWorkflows->add($workflow);
+        }
+        return $this;
+    }
+
 }

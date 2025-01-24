@@ -1,13 +1,18 @@
 # see https://symfony.com/doc/current/reference/configuration/framework.html
 framework:
     secret: '%env(APP_SECRET)%'
+    
 
     # Note that the session will be started ONLY if you read or write from it.
-    session: true
-
+    session:
+        handler_id: null  # Use PHP's native session handler
+        storage_factory_id: session.storage.factory.native
+        cookie_secure: auto  # Only send cookies over HTTPS when using HTTPS
+        cookie_samesite: lax  # Helps protect against CSRF attacks
+        cookie_lifetime: 3600  # Optional: Set session cookie lifetime (in seconds)
     #esi: true
     #fragments: true
-
+    
 when@test:
     framework:
         test: true

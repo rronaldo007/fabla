@@ -2,59 +2,137 @@
 
 namespace App\Controller;
 
-use App\Entity\User;
-use App\Form\UserType;
-use App\Entity\UserProfile;
-use App\Form\UserProfileType;
 use App\Entity\Role;
+use App\Entity\User;
+use App\Entity\UserProfile;
+use App\Entity\RegisterWorkflow;
+use App\Form\UserType;
+use App\Form\UserProfileType;
 use App\Service\UserWorkflowService;
-
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-final class AuthController extends AbstractController
+class AuthController extends AbstractController
 {
+    public function __construct(
+        private UrlGeneratorInterface $urlGenerator
+    ) {
+    }
+
     #[Route('/registration', name: 'app_registration')]
     public function registration(
         Request $request,
         EntityManagerInterface $em,
         UserPasswordHasherInterface $passwordHasher,
         UserWorkflowService $workflowService
-     ): Response {
-        $form = $this->createForm(UserType::class, new User());
+    ): Response {
+        $user = new User();
+        $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
-     
+
         if ($form->isSubmitted() && $form->isValid()) {
-            $email = $form->get('email')->getData();
-            
+            $email = $user->getEmail();
+
+            // Check if user with this email already exists
             if ($em->getRepository(User::class)->findOneBy(['email' => $email])) {
-                $this->addFlash('danger', 'le mail est déjà utilisé.');
+                $this->addFlash('danger', 'This email is already in use.');
                 return $this->render('auth/user_registration.html.twig', [
                     'form' => $form->createView(),
                 ]);
             }
-     
-            $user = $form->getData();
-            $user->setPassword($passwordHasher->hashPassword($user, $form->get('password')->getData()))
-                ->setIsActive(false)
-                ->setIsValidated(false)
-                ->setRole($em->getRepository(Role::class)->findOneBy(['name' => 'ROLE_CANDIDATE']));
-     
+
+            // Hash the password
+            $hashedPassword = $passwordHasher->hashPassword($user, $user->getPassword());
+            $user->setPassword($hashedPassword);
+
+            // Assign default role
+            $role = $em->getRepository(Role::class)->findOneBy(['name' => 'ROLE_CANDIDATE']);
+            $user->setRole($role);
+
+            // Generate validation token (optional)
+            $user->generateValidationToken();
+
+            // Persist the user first
             $em->persist($user);
-            $workflowService->applyTransition($user, 'send_email');
             $em->flush();
-     
-            return $this->redirectToRoute('app_profile_completion', ['id' => $user->getId()]);
+
+            // 1) Create a RegisterWorkflow entry for this user
+            $registerWorkflow = new RegisterWorkflow();
+            $registerWorkflow
+                ->setWorkflowKey('user_registration')  // or any unique key or name
+                ->setName('User Registration Flow');
+
+            $em->persist($registerWorkflow);
+            $em->flush();
+
+            // 2) Trigger "send_email" on the new RegisterWorkflow
+            $workflowService->applyTransition($registerWorkflow, 'send_email');
+            $em->flush();
+
+            // 3) Feedback
+            $this->addFlash('success', 'Registration successful! Please check your inbox to validate your email.');
+            return $this->redirectToRoute('app_login');
         }
-     
+
         return $this->render('auth/user_registration.html.twig', [
             'form' => $form->createView(),
         ]);
-     }
+    }
+
+    #[Route('/validate-email', name: 'app_validate_email')]
+    public function validateEmail(
+        Request $request,
+        EntityManagerInterface $em,
+        UserWorkflowService $workflowService
+    ): Response {
+        $token = $request->query->get('token');
+        if (!$token) {
+            return $this->render('auth/email_validation_error.html.twig', [
+                'error' => 'No token provided.',
+            ]);
+        }
+
+        // 1) Find user by token
+        $user = $em->getRepository(User::class)->findOneBy(['validationToken' => $token]);
+        if (!$user) {
+            return $this->render('auth/email_validation_error.html.twig', [
+                'error' => 'Invalid or expired validation link.',
+            ]);
+        }
+
+        // 2) Find this user's RegisterWorkflow
+        $registerWorkflow = $em->getRepository(RegisterWorkflow::class)->findOneBy([
+            'user' => $user,
+            'workflow_key' => 'user_registration',
+        ]);
+
+        if (!$registerWorkflow) {
+            return $this->render('auth/email_validation_error.html.twig', [
+                'error' => 'No workflow found for this user.',
+            ]);
+        }
+
+        // 3) Attempt the "validate_email" transition
+        if ($workflowService->applyTransition($registerWorkflow, 'validate_email')) {
+            $user->setValidationToken(null); // can't reuse
+
+            $em->flush();
+
+            $this->addFlash('success', 'Your email has been validated successfully!');
+            return $this->redirectToRoute('app_profile_completion', ['id' => $user->getId()]);
+        }
+
+        return $this->render('auth/email_validation_error.html.twig', [
+            'error' => 'User not in a valid state for email validation.',
+        ]);
+    }
 
     #[Route('/profile-completion/{id}', name: 'app_profile_completion')]
     public function completeProfile(
@@ -63,13 +141,25 @@ final class AuthController extends AbstractController
         EntityManagerInterface $em,
         UserWorkflowService $workflowService
     ): Response {
-        // Ensure the user is in the correct state before proceeding
-        if ($user->getCurrentPlace() !== 'email_validated') {
-            return new Response('You must validate your email before completing your profile.', Response::HTTP_FORBIDDEN);
+        // 1) Retrieve the RegisterWorkflow for this user
+        $registerWorkflow = $em->getRepository(RegisterWorkflow::class)->findOneBy([
+            'user' => $user,
+            'workflow_key' => 'user_registration',
+        ]);
+
+        if (!$registerWorkflow) {
+            $this->addFlash('warning', 'No registration workflow found.');
+            return $this->redirectToRoute('app_registration');
         }
 
-        $profile = $user->getUserProfile() ?? new UserProfile();
+        // 2) Check if the user is indeed "email_validated"
+        if ($registerWorkflow->getCurrentPlace() !== 'email_validated') {
+            $this->addFlash('warning', 'You must validate your email before completing your profile.');
+            return $this->redirectToRoute('app_registration');
+        }
 
+        // Build or retrieve the user profile
+        $profile = $user->getUserProfile() ?? new UserProfile();
         if (!$profile->getUser()) {
             $profile->setUser($user);
             $em->persist($profile);
@@ -79,41 +169,67 @@ final class AuthController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $workflowService->applyTransition($user, 'complete_profile');
+            // 3) Fire "complete_profile"
+            $workflowService->applyTransition($registerWorkflow, 'complete_profile');
             $em->flush();
+
+            $this->addFlash('success', 'Profile completed successfully! You can now continue to the homepage.');
             return $this->redirectToRoute('app_home');
         }
 
         return $this->render('auth/user_profile.html.twig', [
             'form' => $form->createView(),
+            'user' => $user,
         ]);
     }
 
-
-    #[Route('/validate-email/{id}', name: 'app_validate_email')]
-    public function validateEmail(
-        int $id,
-        EntityManagerInterface $em,
-        UserWorkflowService $workflowService
+    #[Route('/login', name: 'app_login')]
+    public function login(
+        AuthenticationUtils $authenticationUtils,
+        EntityManagerInterface $em
     ): Response {
-        // Find the user by id
-        $user = $em->getRepository(User::class)->find($id);
-
-        if (!$user) {
-            // Return a 404 response if the user is not found
-            return new Response('User not found.', Response::HTTP_NOT_FOUND);
+        if ($this->getUser()) {
+            $this->addFlash('info', 'You are already logged in.');
+            return $this->redirectToRoute('app_home');
         }
 
-        // Set the user as validated
-        $user->setIsValidated(true);
+        $error = $authenticationUtils->getLastAuthenticationError();
+        $lastUsername = $authenticationUtils->getLastUsername();
 
-        // Transition to the "email_validated" state
-        if ($workflowService->applyTransition($user, 'validate_email')) {
-            $em->flush();
-            return new Response('Email validated successfully!');
+        // If there's a login error, check workflow
+        if ($lastUsername && $error) {
+            $user = $em->getRepository(User::class)->findOneBy(['email' => $lastUsername]);
+
+            if ($user) {
+                $registerWorkflow = $em->getRepository(RegisterWorkflow::class)->findOneBy([
+                    'user' => $user,
+                    'workflow_key' => 'user_registration'
+                ]);
+
+                // If the user hasn't validated email, direct them to "need-validation"
+                if ($registerWorkflow && $registerWorkflow->getCurrentPlace() !== 'email_validated') {
+                    return new RedirectResponse($this->urlGenerator->generate('app_needs_validation'));
+                }
+            }
         }
 
-        return new Response('Invalid state for email validation.', Response::HTTP_BAD_REQUEST);
+        return $this->render('auth/login.html.twig', [
+            'last_username' => $lastUsername,
+            'error'         => $error,
+        ]);
     }
 
+    #[Route('/logout', name: 'app_logout')]
+    public function logout(): void
+    {
+        throw new \LogicException('This method should not be called directly.');
+    }
+
+    #[Route('/need-validation', name: 'app_needs_validation')]
+    public function needValidation(): Response
+    {
+        return $this->render('auth/validation.html.twig', [
+            'message' => 'Please validate your email before logging in.'
+        ]);
+    }
 }
