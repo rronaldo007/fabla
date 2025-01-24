@@ -28,8 +28,12 @@
                       </li>
                     </ul>
                     <div>
-                        <a class="" href="">connection</a>
+                      {% if app.user %}
+                        <a class="" href="{{ path('app_logout') }}">deconnection</a>
+                      {% else %}
+                        <a class="" href="{{ path('app_login') }}">connection</a>
                         <a class="" href="{{ path('app_registration') }}">creer votre compte</a>
+                      {% endif %}
                     </div>
                   </div>
                 </div>

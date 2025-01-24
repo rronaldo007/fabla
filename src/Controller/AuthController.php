@@ -7,6 +7,7 @@ use App\Form\UserType;
 use App\Entity\UserProfile;
 use App\Form\UserProfileType;
 use App\Entity\Role;
+use App\Entity\WorkflowState;
 use App\Service\UserWorkflowService;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -15,6 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 final class AuthController extends AbstractController
 {
@@ -24,7 +26,7 @@ final class AuthController extends AbstractController
         EntityManagerInterface $em,
         UserPasswordHasherInterface $passwordHasher,
         UserWorkflowService $workflowService
-     ): Response {
+    ): Response {
         $form = $this->createForm(UserType::class, new User());
         $form->handleRequest($request);
      
@@ -32,21 +34,31 @@ final class AuthController extends AbstractController
             $email = $form->get('email')->getData();
             
             if ($em->getRepository(User::class)->findOneBy(['email' => $email])) {
-                $this->addFlash('danger', 'le mail est déjà utilisé.');
+                $this->addFlash('danger', 'le mail est déjà utilisé.');
                 return $this->render('auth/user_registration.html.twig', [
                     'form' => $form->createView(),
                 ]);
             }
-     
+            
             $user = $form->getData();
             $user->setPassword($passwordHasher->hashPassword($user, $form->get('password')->getData()))
                 ->setIsActive(false)
                 ->setIsValidated(false)
-                ->setRole($em->getRepository(Role::class)->findOneBy(['name' => 'ROLE_CANDIDATE']));
-     
+                ->setRole($em->getRepository(Role::class)->findOneBy(['name' => 'ROLE_CANDIDATE']))
+                ->setEmailValidationToken(bin2hex(random_bytes(32)))
+                ->setEmailValidationTokenExpiresAt(new \DateTime('+24 hours'));
+    
+            $workflowState = new WorkflowState();
+            $workflowState->setState('new');
+            $workflowState->setUser($user);
+            
             $em->persist($user);
+            $em->persist($workflowState);
+    
             $workflowService->applyTransition($user, 'send_email');
+    
             $em->flush();
+            $this->addFlash('success', 'Votre compte a été créé avec succès. Un email de confirmation vous a été envoyé.');
      
             return $this->redirectToRoute('app_profile_completion', ['id' => $user->getId()]);
         }
@@ -54,7 +66,7 @@ final class AuthController extends AbstractController
         return $this->render('auth/user_registration.html.twig', [
             'form' => $form->createView(),
         ]);
-     }
+    }
 
     #[Route('/profile-completion/{id}', name: 'app_profile_completion')]
     public function completeProfile(
@@ -62,58 +74,98 @@ final class AuthController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         UserWorkflowService $workflowService
-    ): Response {
-        // Ensure the user is in the correct state before proceeding
-        if ($user->getCurrentPlace() !== 'email_validated') {
-            return new Response('You must validate your email before completing your profile.', Response::HTTP_FORBIDDEN);
-        }
-
+     ): Response {
+     
+        // Store initial state
+        $initialState = new WorkflowState();
+        $initialState->setState($user->getCurrentPlace());
+        $initialState->setUser($user);
+        $em->persist($initialState);
+     
         $profile = $user->getUserProfile() ?? new UserProfile();
-
+     
         if (!$profile->getUser()) {
             $profile->setUser($user);
             $em->persist($profile);
         }
-
+     
         $form = $this->createForm(UserProfileType::class, $profile);
         $form->handleRequest($request);
-
+     
         if ($form->isSubmitted() && $form->isValid()) {
             $workflowService->applyTransition($user, 'complete_profile');
             $em->flush();
+            $this->addFlash('success', 'Votre profil a été completé avec succès.');
             return $this->redirectToRoute('app_home');
         }
-
+     
         return $this->render('auth/user_profile.html.twig', [
             'form' => $form->createView(),
         ]);
+     }
+
+     #[Route('/validate-email/{token}', name: 'app_validate_email')]
+     public function validateEmail(
+         string $token,
+         EntityManagerInterface $em,
+         UserWorkflowService $workflowService
+     ): Response {
+         $user = $em->getRepository(User::class)->findOneBy(['emailValidationToken' => $token]);
+         
+         if (!$user) {
+             return new Response('Invalid validation token.', Response::HTTP_NOT_FOUND);
+         }
+         
+         if ($user->getEmailValidationTokenExpiresAt() < new \DateTime()) {
+             return new Response('Validation token has expired.', Response::HTTP_GONE);
+         }
+     
+         $initialState = new WorkflowState();
+         $initialState->setState($user->getCurrentPlace());
+         $initialState->setUser($user);
+         $em->persist($initialState);
+         
+         $user->setIsValidated(true)
+             ->setEmailValidationToken(null)
+             ->setEmailValidationTokenExpiresAt(null);
+         
+         if ($workflowService->applyTransition($user, 'validate_email')) {
+             $em->flush();
+             return $this->redirectToRoute('app_login');
+         }
+         
+         return new Response('Invalid state for email validation.', Response::HTTP_BAD_REQUEST);
+     }
+
+    #[Route('/login', name: 'app_login')]
+    public function login(
+        AuthenticationUtils $authenticationUtils,
+        EntityManagerInterface $em
+    ): Response {
+        if ($this->getUser()) {
+            $this->addFlash('info', 'You are already logged in.');
+            return $this->redirectToRoute('app_home');
+        }
+
+        $error = $authenticationUtils->getLastAuthenticationError();
+        $lastUsername = $authenticationUtils->getLastUsername();
+
+        if ($error) {
+            $this->addFlash('danger', 'Identifiants invalides.');
+        } else if ($this->getUser()) {
+            $this->addFlash('success', 'Bienvenue ' . $this->getUser()->getEmail());
+        }
+
+        return $this->render('auth/login.html.twig', [
+            'last_username' => $lastUsername,
+            'error'         => $error,
+        ]);
     }
 
-
-    #[Route('/validate-email/{id}', name: 'app_validate_email')]
-    public function validateEmail(
-        int $id,
-        EntityManagerInterface $em,
-        UserWorkflowService $workflowService
-    ): Response {
-        // Find the user by id
-        $user = $em->getRepository(User::class)->find($id);
-
-        if (!$user) {
-            // Return a 404 response if the user is not found
-            return new Response('User not found.', Response::HTTP_NOT_FOUND);
-        }
-
-        // Set the user as validated
-        $user->setIsValidated(true);
-
-        // Transition to the "email_validated" state
-        if ($workflowService->applyTransition($user, 'validate_email')) {
-            $em->flush();
-            return new Response('Email validated successfully!');
-        }
-
-        return new Response('Invalid state for email validation.', Response::HTTP_BAD_REQUEST);
+    #[Route('/logout', name: 'app_logout')]
+    public function logout(): void
+    {
+        throw new \LogicException('This method should not be called directly.');
     }
 
 }

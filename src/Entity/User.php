@@ -6,6 +6,8 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -38,6 +40,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'string', length: 50)]
     private string $currentPlace = 'new';
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: WorkflowState::class)]
+    private Collection $workflowStates;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $emailValidationToken = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $emailValidationTokenExpiresAt = null;
+
+    public function __construct()
+    {
+        $this->workflowStates = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -160,4 +176,41 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
     }
+
+    public function getWorkflowStates(): Collection
+    {
+        return $this->workflowStates;
+    }
+
+    public function addWorkflowState(WorkflowState $state): self
+    {
+        if (!$this->workflowStates->contains($state)) {
+            $this->workflowStates->add($state);
+            $state->setUser($this);
+        }
+        return $this;
+    }
+
+    public function getEmailValidationToken(): ?string
+    {
+        return $this->emailValidationToken;
+    }
+
+    public function setEmailValidationToken(?string $token): static
+    {
+        $this->emailValidationToken = $token;
+        return $this;
+    }
+
+    public function getEmailValidationTokenExpiresAt(): ?\DateTimeInterface
+    {
+        return $this->emailValidationTokenExpiresAt;
+    }
+
+    public function setEmailValidationTokenExpiresAt(?\DateTimeInterface $expiresAt): static
+    {
+        $this->emailValidationTokenExpiresAt = $expiresAt;
+        return $this;
+    }
 }
+
