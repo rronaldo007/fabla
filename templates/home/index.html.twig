@@ -1,7 +1,137 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-<div class="container">
-    <h1>Home</h1>
+<div class="container my-5">
+    <!-- Hero Section -->
+    <header class="hero bg-dark text-white text-center py-5 rounded mb-5" style="background-image: url('/images/hero-bg.jpg'); background-size: cover; background-position: center;">
+        <h1 class="display-3">Welcome to Électron</h1>
+        <p class="lead">The Premier Research Fablab Sponsored by BARAM</p>
+        <a href="/apply" class="btn btn-light btn-lg mt-3">Apply Now</a>
+    </header>
+
+    <!-- About Section -->
+    <section class="about py-5 text-center">
+        <div class="row align-items-center">
+            <div class="col-md-6 mb-4">
+                <img src="/images/fablab.jpg" class="img-fluid rounded shadow" alt="Fablab">
+            </div>
+            <div class="col-md-6">
+                <h2>About Électron</h2>
+                <p>
+                    Électron is a hub for technological excellence, bringing together the brightest minds in robotics.
+                    With cutting-edge resources and the support of BARAM, we foster innovation and breakthroughs in industrial and medical robotics.
+                </p>
+                <p>
+                    Our mission is to create a collaborative environment where innovation thrives, supported by the latest advancements in technology.
+                    Our members work on impactful projects that influence industries and shape the future of robotics.
+                </p>
+                <a href="/about" class="btn btn-outline-primary mt-3">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features bg-light py-5 rounded shadow-sm my-5">
+        <div class="text-center mb-4">
+            <h2 class="h3">Why Choose Électron?</h2>
+        </div>
+        <div class="row text-center">
+            <div class="col-md-4">
+                <div class="icon mb-3">
+                    <i class="bi bi-cpu fs-1 text-primary"></i>
+                </div>
+                <h4>State-of-the-Art Labs</h4>
+                <p>Access cutting-edge tools like 3D metal printers and quantum calculators for advanced research.</p>
+            </div>
+            <div class="col-md-4">
+                <div class="icon mb-3">
+                    <i class="bi bi-award fs-1 text-primary"></i>
+                </div>
+                <h4>Elite Community</h4>
+                <p>Join a select group of researchers and innovators in the field of robotics, collaborating on impactful projects.</p>
+            </div>
+            <div class="col-md-4">
+                <div class="icon mb-3">
+                    <i class="bi bi-people fs-1 text-primary"></i>
+                </div>
+                <h4>Global Impact</h4>
+                <p>Contribute to projects that push the boundaries of technology and make a global difference.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Technology Highlights -->
+    <section class="technology py-5 bg-dark text-white rounded mb-5">
+        <div class="text-center mb-4">
+            <h2 class="h3">Advanced Technology in Action</h2>
+        </div>
+        <div class="row text-center">
+            <div class="col-md-4">
+                <div class="feature-box py-3">
+                    <i class="bi bi-robot fs-1"></i>
+                    <h4>AI-Driven Research</h4>
+                    <p>Leverage AI to accelerate innovation and enhance problem-solving capabilities in robotics.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-box py-3">
+                    <i class="bi bi-hammer fs-1"></i>
+                    <h4>3D Metal Printing</h4>
+                    <p>Create precision components with our advanced metal printing technology for prototyping and development.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-box py-3">
+                    <i class="bi bi-lightning fs-1"></i>
+                    <h4>Quantum Computing</h4>
+                    <p>Utilize quantum systems to tackle complex computational problems and explore innovative solutions.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sponsor Section -->
+    <section class="sponsor py-5 text-center">
+        <h2 class="h4 mb-3">Our Sponsor: BARAM</h2>
+        <p class="text-muted">
+            BARAM, a leader in industrial robotics, drives our mission with innovation in fixed IRAs, mobile AGVs/AMRs, and professional androids.
+        </p>
+        <p>
+            Their expertise in robotics helps us remain at the forefront of research and development, enabling our members to achieve groundbreaking results.
+        </p>
+        <img src="/images/baram-logo.png" alt="BARAM Logo" class="img-fluid my-4" style="max-width: 200px;">
+    </section>
+
+    <!-- Research Areas Section -->
+    <section class="research-areas py-5 bg-light rounded shadow-sm">
+        <div class="text-center mb-4">
+            <h2 class="h3">Our Key Research Areas</h2>
+        </div>
+        <div class="row text-center">
+            <div class="col-md-3">
+                <h4>Medical Robotics</h4>
+                <p>Developing cutting-edge solutions for healthcare applications.</p>
+            </div>
+            <div class="col-md-3">
+                <h4>Autonomous Systems</h4>
+                <p>Advancing self-navigating systems for industrial and commercial use.</p>
+            </div>
+            <div class="col-md-3">
+                <h4>Human-Robot Interaction</h4>
+                <p>Enhancing collaboration between humans and robotic systems.</p>
+            </div>
+            <div class="col-md-3">
+                <h4>Machine Learning</h4>
+                <p>Integrating AI for smarter, more efficient robotics solutions.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact py-5 text-center bg-primary text-white">
+        <h2 class="h4">Get in Touch</h2>
+        <p>If you have any questions, feel free to reach out to us.</p>
+        <a href="/contact" class="btn btn-light">Contact Us</a>
+    </section>
 </div>
 {% endblock %}

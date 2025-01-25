@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+<div class="container mt-4">
+    {% if app.user %}
+        <div class="card">
+            <div class="card-header">
+                <h1>Welcome, {{ app.user.userProfile.firstName }} {{ app.user.userProfile.lastName }}!</h1>
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    <li class="list-group-item"><strong>Email:</strong> {{ app.user.email }}</li>
+                    <li class="list-group-item"><strong>Role:</strong> {{ app.user.role.name }}</li>
+                    <li class="list-group-item"><strong>Status:</strong> {{ app.user.isActive ? 'Active' : 'Inactive' }}</li>
+                    <li class="list-group-item"><strong>Phone:</strong> {{ app.user.userProfile.phone ?: 'Not Provided' }}</li>
+                    <li class="list-group-item"><strong>Address:</strong> {{ app.user.userProfile.address ?: 'Not Provided' }}</li>
+                    <li class="list-group-item"><strong>Date of Birth:</strong> {{ app.user.userProfile.dateOfBirth ? app.user.userProfile.dateOfBirth|date('d/m/Y') : 'Not Provided' }}</li>
+                </ul>
+                <a href="" class="btn btn-primary mt-3">Edit Profile</a>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-danger mt-4">
+            You must be logged in to view this page.
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

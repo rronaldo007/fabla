@@ -1,70 +1,127 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        {% block stylesheets %}
-            {{ encore_entry_link_tags('app') }}
-        {% endblock %}
-
-        {% block javascripts %}
-            {{ encore_entry_script_tags('app') }}
-        {% endblock %}
-    </head>
-    <body>
-
-        <div class="container mt-5">
-
-            <nav class="navbar navbar-expand-lg bg-body-tertiary">
-                <div class="container-fluid">
-                  <a class="navbar-brand" href="#">FABLAB</a>
-                  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                  </button>
-                  <div class="collapse navbar-collapse" id="navbarText">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                      <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#">Home</a>
-                      </li>
-                    </ul>
-                    <div>
-                      {% if app.user %}
-                        <a class="" href="{{ path('app_logout') }}">deconnection</a>
-                        {% if app.user.isActive %}
-                        <a class="" href="{{ path('app_profile_completion', {'id': app.user.id}) }}">profil</a>
-                        {% endif %}
-                      {% else %}
-                        <a class="" href="{{ path('app_login') }}">connection</a>
-                        <a class="" href="{{ path('app_registration') }}">creer votre compte</a>
-                      {% endif %}
-                    </div>
-                  </div>
-                </div>
-              </nav>
-
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Welcome!{% endblock %}</title>
+    {% block stylesheets %}
+        {{ encore_entry_link_tags('app') }}
+    {% endblock %}
+    {% block javascripts %}
+        {{ encore_entry_script_tags('app') }}
+    {% endblock %}
+    <style>
+        .sticky-top {
+            position: sticky;
+            top: 5;
+            z-index: 1020;
+        }
+    </style>
+</head>
+<body>
+    <nav class="container navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ path('app_home') }}">FABLAB</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{{ path('app_home') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_about') }}">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_researc_areas') }}">Research Areas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_apply') }}">Apply</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/contact">Contact</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    {% if app.user %}
+                        {% if app.user.isActive and app.user.currentPlace == 'profile_completed' or app.user.currentPlace == 'active' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ path('app_profile', {'id': app.user.id}) }}">My Profile</a>
+                            </li>
+                        {% endif%}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_logout') }}">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_login') }}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_registration') }}">Register</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
+    </nav>
 
-        <div class="container mt-5">
-          {% if app.user and not app.user.isActive %}
+    <div class="container mt-5">
+        {% if app.user and not app.user.isActive %}
             <div class="alert alert-danger alert-dismissible fade show">
                 Your account is not active. Please check your email for a validation link.
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-          {% endif %}
-            
-        </div>
+        {% endif %}
 
+        {% if app.user and app.user.currentPlace == 'email_validated' %}
+            <div class="alert alert-danger alert-dismissible fade show">
+                <p>Please complete your profile</p>
+                <a class="btn btn-primary" href="{{ path('app_profile_completion', {'id': app.user.id}) }}">Complete Your Profile</a>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
 
-        <div class="container">
-          {% for label, messages in app.flashes %}
-          {% for message in messages %}
-              <div class="alert alert-{{ label }} alert-dismissible fade show">
-                  {{ message }}
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-              </div>
-          {% endfor %}
-      {% endfor %}
-        </div>
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+
         {% block body %}{% endblock %}
-    </body>
+    </div>
+
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>About FABLAB</h5>
+                    <p>FABLAB is a hub for innovation and research, dedicated to advancing robotics and technology.</p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ path('app_about') }}" class="text-decoration-none text-white">About Us</a></li>
+                        <li><a href="{{ path('app_contact') }}" class="text-decoration-none text-white">Contact</a></li>
+                        <li><a href="{{ path('app_apply') }}" class="text-decoration-none text-white">Apply</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 text-md-end">
+                    <h5>Follow Us</h5>
+                    <div class="d-flex justify-content-md-end">
+                        <a href="#" class="text-white text-decoration-none me-3 fs-4"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-white text-decoration-none me-3 fs-4"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="text-white text-decoration-none fs-4"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <p class="mb-0 text-muted">&copy; {{ "now"|date("Y") }} FABLAB. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
 </html>
