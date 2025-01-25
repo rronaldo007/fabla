@@ -1,18 +1,18 @@
 framework:
     workflows:
         user_registration:
-            type: state_machine
+            type: 'state_machine'
             marking_store:
-                property: currentPlace # Use the `currentPlace` property to store state
+                type: 'method' # Use method-based marking store
+                property: 'currentPlace' # Tell it to use `currentPlace` instead of `state`
             supports:
                 - App\Entity\User
-            initial_marking: new
+            initial_marking: 'new'
             places:
                 - new
                 - email_sent
                 - email_validated
                 - profile_completed
-                - active
             transitions:
                 send_email:
                     from: new
@@ -23,6 +23,3 @@ framework:
                 complete_profile:
                     from: email_validated
                     to: profile_completed
-                activate_user:
-                    from: profile_completed
-                    to: active

@@ -3,57 +3,76 @@
 namespace App\Service;
 
 use App\Entity\User;
-use App\Entity\UserProfile;
+use App\Entity\WorkflowState;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Workflow\WorkflowInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+use Psr\Log\LoggerInterface;
 
-class UserWorkflowService
-{
+class UserWorkflowService {
     private WorkflowInterface $workflow;
     private EntityManagerInterface $em;
+    private MailerInterface $mailer;
 
-    public function __construct(WorkflowInterface $userRegistrationStateMachine, EntityManagerInterface $em)
-    {
+    private LoggerInterface $logger;
+
+    public function __construct(
+        WorkflowInterface $userRegistrationStateMachine,
+        EntityManagerInterface $em,
+        MailerInterface $mailer,
+        LoggerInterface $logger
+    ) {
         $this->workflow = $userRegistrationStateMachine;
         $this->em = $em;
+        $this->mailer = $mailer;
+        $this->logger = $logger;
     }
-
-    /**
-     * Apply a workflow transition to the given user.
-     *
-     * @param User   $user       The user entity
-     * @param string $transition The transition to apply
-     * @param array  $profileData Optional profile data for the `complete_profile` transition
-     *
-     * @return bool True if the transition was successfully applied, false otherwise
-     */
     public function applyTransition(User $user, string $transition, array $profileData = []): bool
     {
-        // Check if the transition is valid for the current state
         if ($this->workflow->can($user, $transition)) {
-            // Apply the transition
             $this->workflow->apply($user, $transition);
+
+            // Send email if the transition is `send_email`
+            if ($transition === 'send_email') {
+                $this->sendEmail($user);
+            }
+
+            // Create workflow state record
+            $workflowState = new WorkflowState();
+            $workflowState->setState($user->getCurrentPlace());
+            $workflowState->setUser($user);
+
+            $this->em->persist($workflowState);
+            $this->em->flush();
 
             return true;
         }
 
-        // Transition is invalid; throw an exception or return false
         throw new \LogicException(sprintf(
-            'Cannot apply transition "%s" from the current state "%s".',
+            'Cannot apply transition "%s" from state "%s".',
             $transition,
             $user->getCurrentPlace()
         ));
     }
 
-    /**
-     * Get all available transitions for the given user.
-     *
-     * @param User $user
-     * @return array
-     */
-    public function getAvailableTransitions(User $user): array
+    private function sendEmail(User $user): bool
     {
-        return $this->workflow->getEnabledTransitions($user);
-    }
+        try {
+            $email = (new Email())
+                ->from('no-reply@yourdomain.com')
+                ->to($user->getEmail())
+                ->subject('Confirm Your Registration')
+                ->html('<p>Please confirm your email by clicking the link below:</p>
+                        <a href="https://localhost:8000/validate-email/' . $user->getEmailValidationToken() . '">Confirm Email</a>');
 
+            $this->mailer->send($email);
+
+            $this->logger->info('Email sent successfully to ' . $user->getEmail());
+            return true;
+        } catch (\Symfony\Component\Mailer\Exception\TransportExceptionInterface $e) {
+            $this->logger->error('Failed to send email to ' . $user->getEmail() . ': ' . $e->getMessage());
+            return false;
+        }
+    }
 }
