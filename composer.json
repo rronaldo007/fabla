@@ -25,6 +25,7 @@
         "symfony/http-client": "7.2.*",
         "symfony/intl": "7.2.*",
         "symfony/mailer": "7.2.*",
+        "symfony/mercure-bundle": "^0.3.9",
         "symfony/mime": "7.2.*",
         "symfony/monolog-bundle": "^3.0",
         "symfony/notifier": "7.2.*",
@@ -38,10 +39,12 @@
         "symfony/string": "7.2.*",
         "symfony/translation": "7.2.*",
         "symfony/twig-bundle": "7.2.*",
+        "symfony/uid": "7.2.*",
         "symfony/ux-turbo": "^2.22",
         "symfony/validator": "7.2.*",
         "symfony/web-link": "7.2.*",
         "symfony/webpack-encore-bundle": "^2.2",
+        "symfony/workflow": "7.2.*",
         "symfony/yaml": "7.2.*",
         "twig/extra-bundle": "^2.12|^3.0",
         "twig/twig": "^2.12|^3.0"
@@ -98,6 +101,7 @@
         }
     },
     "require-dev": {
+        "doctrine/doctrine-fixtures-bundle": "^4.0",
         "phpunit/phpunit": "^9.5",
         "symfony/browser-kit": "7.2.*",
         "symfony/css-selector": "7.2.*",

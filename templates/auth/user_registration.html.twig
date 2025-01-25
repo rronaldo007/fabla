@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Register - FABLAB{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+   <form method="post" class="col-md-6 mx-auto p-5 border rounded shadow-lg bg-white">
+       <h1 class="h3 mb-4 fw-bold text-center text-primary">Create Your FABLAB Account</h1>
+       <p class="text-center text-muted mb-4">Join the community of innovators and start your journey today.</p>
+
+       {{ form_start(form) }}
+
+       <div class="mb-4">
+           <label class="form-label">{{ form_label(form.email) }}</label>
+           {{ form_widget(form.email, {'attr': {'class': 'form-control', 'placeholder': 'Enter your email address'}}) }}
+           {{ form_errors(form.email) }}
+       </div>
+
+       <div class="mb-4">
+           <label class="form-label">{{ form_label(form.password.first) }}</label>
+           {{ form_widget(form.password.first, {'attr': {'class': 'form-control', 'placeholder': 'Create a strong password'}}) }}
+           {{ form_errors(form.password.first) }}
+       </div>
+
+       <div class="mb-4">
+           <label class="form-label">{{ form_label(form.password.second) }}</label>
+           {{ form_widget(form.password.second, {'attr': {'class': 'form-control', 'placeholder': 'Confirm your password'}}) }}
+           {{ form_errors(form.password.second) }}
+       </div>
+
+       <button type="submit" class="btn btn-primary w-100 py-2 mb-3">Register</button>
+
+       {{ form_end(form) }}
+
+       <div class="text-center mt-4">
+           <p class="form-text">Already have an account? 
+               <a href="{{ path('app_login') }}" class="fw-bold text-decoration-none text-primary">Sign In</a>
+           </p>
+       </div>
+   </form>
+</div>
+{% endblock %}

@@ -29,9 +29,12 @@ class UserProfile
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $date_of_birth = null;
 
-    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(inversedBy: 'userProfile', targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
+
+    #[ORM\OneToOne(mappedBy: 'userProfile', cascade: ['persist', 'remove'])]
+    private ?CandidateProfile $candidateProfile = null;
 
     public function getId(): ?int
     {
@@ -103,9 +106,31 @@ class UserProfile
         return $this->user;
     }
 
-    public function setUser(User $user): static
+    public function setUser(?User $user): static
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function getCandidateProfile(): ?CandidateProfile
+    {
+        return $this->candidateProfile;
+    }
+
+    public function setCandidateProfile(?CandidateProfile $candidateProfile): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($candidateProfile === null && $this->candidateProfile !== null) {
+            $this->candidateProfile->setUserProfile(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($candidateProfile !== null && $candidateProfile->getUserProfile() !== $this) {
+            $candidateProfile->setUserProfile($this);
+        }
+
+        $this->candidateProfile = $candidateProfile;
 
         return $this;
     }
