@@ -4,8 +4,6 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\UserType;
-use App\Entity\UserProfile;
-use App\Form\UserProfileType;
 use App\Entity\Role;
 use App\Entity\WorkflowState;
 use App\Service\UserWorkflowService;
@@ -67,42 +65,6 @@ final class AuthController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
-
-    #[Route('/profile-completion/{id}', name: 'app_profile_completion')]
-    public function completeProfile(
-        User $user,
-        Request $request,
-        EntityManagerInterface $em,
-        UserWorkflowService $workflowService
-     ): Response {
-     
-        // Store initial state
-        $initialState = new WorkflowState();
-        $initialState->setState($user->getCurrentPlace());
-        $initialState->setUser($user);
-        $em->persist($initialState);
-     
-        $profile = $user->getUserProfile() ?? new UserProfile();
-     
-        if (!$profile->getUser()) {
-            $profile->setUser($user);
-            $em->persist($profile);
-        }
-     
-        $form = $this->createForm(UserProfileType::class, $profile);
-        $form->handleRequest($request);
-     
-        if ($form->isSubmitted() && $form->isValid()) {
-            $workflowService->applyTransition($user, 'complete_profile');
-            $em->flush();
-            $this->addFlash('success', 'Votre profil a été completé avec succès.');
-            return $this->redirectToRoute('app_home');
-        }
-     
-        return $this->render('auth/user_profile.html.twig', [
-            'form' => $form->createView(),
-        ]);
-     }
 
      #[Route('/validate-email/{token}', name: 'app_validate_email')]
      public function validateEmail(
