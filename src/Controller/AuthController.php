@@ -60,7 +60,7 @@ final class AuthController extends AbstractController
             $em->flush();
             $this->addFlash('success', 'Votre compte a été créé avec succès. Un email de confirmation vous a été envoyé.');
      
-            return $this->redirectToRoute('app_profile_completion', ['id' => $user->getId()]);
+            return $this->redirectToRoute('app_login', ['id' => $user->getId()]);
         }
      
         return $this->render('auth/user_registration.html.twig', [
@@ -127,7 +127,8 @@ final class AuthController extends AbstractController
          
          $user->setIsValidated(true)
              ->setEmailValidationToken(null)
-             ->setEmailValidationTokenExpiresAt(null);
+             ->setEmailValidationTokenExpiresAt(null)
+             ->setIsActive(true);
          
          if ($workflowService->applyTransition($user, 'validate_email')) {
              $em->flush();

@@ -1,31 +1,25 @@
 framework:
-   workflows:
-       user_registration:
-           type: state_machine
-           audit_trail:
-               enabled: true
-           marking_store:
-               type: method
-               property: state
-           supports:
-               - App\Entity\User
-           initial_marking: new
-           places:
-               - new
-               - email_sent 
-               - email_validated
-               - profile_completed
-               - active
-           transitions:
-               send_email:
-                   from: new
-                   to: email_sent
-               validate_email:
-                   from: email_sent
-                   to: email_validated 
-               complete_profile:
-                   from: email_validated
-                   to: profile_completed
-               activate_user:
-                   from: profile_completed
-                   to: active
+    workflows:
+        user_registration:
+            type: 'state_machine'
+            marking_store:
+                type: 'method' # Use method-based marking store
+                property: 'currentPlace' # Tell it to use `currentPlace` instead of `state`
+            supports:
+                - App\Entity\User
+            initial_marking: 'new'
+            places:
+                - new
+                - email_sent
+                - email_validated
+                - profile_completed
+            transitions:
+                send_email:
+                    from: new
+                    to: email_sent
+                validate_email:
+                    from: email_sent
+                    to: email_validated
+                complete_profile:
+                    from: email_validated
+                    to: profile_completed

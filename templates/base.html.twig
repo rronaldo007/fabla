@@ -30,6 +30,9 @@
                     <div>
                       {% if app.user %}
                         <a class="" href="{{ path('app_logout') }}">deconnection</a>
+                        {% if app.user.isActive %}
+                        <a class="" href="{{ path('app_profile_completion', {'id': app.user.id}) }}">profil</a>
+                        {% endif %}
                       {% else %}
                         <a class="" href="{{ path('app_login') }}">connection</a>
                         <a class="" href="{{ path('app_registration') }}">creer votre compte</a>
@@ -39,6 +42,16 @@
                 </div>
               </nav>
 
+        </div>
+
+        <div class="container mt-5">
+          {% if app.user and not app.user.isActive %}
+            <div class="alert alert-danger alert-dismissible fade show">
+                Your account is not active. Please check your email for a validation link.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endif %}
+            
         </div>
 
 
