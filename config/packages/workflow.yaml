@@ -23,3 +23,30 @@ framework:
                 complete_profile:
                     from: email_validated
                     to: profile_completed
+        submission_workflow:
+            type: 'state_machine'
+            marking_store:
+                type: 'method' # Use method-based marking store
+                property: 'currentState' # The property name for storing the state
+            supports:
+                - App\Entity\Submission
+            initial_marking: 'draft'
+            places:
+                - draft
+                - submitted
+                - under_review
+                - approved
+                - rejected
+            transitions:
+                submit:
+                    from: draft
+                    to: submitted
+                review:
+                    from: submitted
+                    to: under_review
+                approve:
+                    from: under_review
+                    to: approved
+                reject:
+                    from: under_review
+                    to: rejected

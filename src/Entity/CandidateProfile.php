@@ -37,6 +37,9 @@ class CandidateProfile
     #[ORM\OneToOne(inversedBy: 'candidateProfile', cascade: ['persist', 'remove'])]
     private ?UserProfile $userProfile = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $CV = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -122,6 +125,18 @@ class CandidateProfile
     public function setUserProfile(?UserProfile $userProfile): static
     {
         $this->userProfile = $userProfile;
+
+        return $this;
+    }
+
+    public function getCV(): ?string
+    {
+        return $this->CV;
+    }
+
+    public function setCV(?string $CV): static
+    {
+        $this->CV = $CV;
 
         return $this;
     }

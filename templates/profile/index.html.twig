@@ -20,6 +20,24 @@
                 <a href="" class="btn btn-primary mt-3">Edit Profile</a>
             </div>
         </div>
+
+        {% if app.user.userProfile.candidateProfile %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h2>Candidate Information</h2>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        <li class="list-group-item"><strong>Program Entry Date:</strong> {{ app.user.userProfile.candidateProfile.programEntryDate|date('d/m/Y') }}</li>
+                        <li class="list-group-item"><strong>Current Year:</strong> {{ app.user.userProfile.candidateProfile.currentYear|date('Y') }}</li>
+                        <li class="list-group-item"><strong>School:</strong> {{ app.user.userProfile.candidateProfile.currentSchool.name ?? 'Not Provided' }}</li>
+                        <li class="list-group-item"><strong>Specialization:</strong> {{ app.user.userProfile.candidateProfile.specialization.name ?? 'Not Provided' }}</li>
+                        <li class="list-group-item"><strong>Nationality:</strong> {{ app.user.userProfile.candidateProfile.nationality.name ?? 'Not Provided' }}</li>
+                    </ul>
+                    <a href="" class="btn btn-primary mt-3">Edit Candidate Profile</a>
+                </div>
+            </div>
+        {% endif %}
     {% else %}
         <div class="alert alert-danger mt-4">
             You must be logged in to view this page.
