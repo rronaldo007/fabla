@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Submission Details{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="mb-4">Submission Confirmation</h1>
+    <p>Thank you for your submission! Here are the details:</p>
+
+    <ul class="list-group">
+        <li class="list-group-item"><strong>Submission ID:</strong> {{ submission.identifier }}</li>
+        <li class="list-group-item"><strong>Current State:</strong> {{ submission.currentState }}</li>
+        <li class="list-group-item"><strong>Submission Accepted:</strong> 
+            {% if submission.isSubmissionAccepted %}
+                Yes
+            {% else %}
+                No
+            {% endif %}
+        </li>
+        <li class="list-group-item"><strong>Candidate Accepted:</strong> 
+            {% if submission.isCandidateAccepted %}
+                Yes
+            {% else %}
+                No
+            {% endif %}
+        </li>
+    </ul>
+
+    <div class="mt-4">
+        <a href="{{ path('app_profile', { 'id': app.user.userProfile.id }) }}"  class="btn btn-primary">View Your Profile</a>
+        <a href="{{ path('app_apply', { 'id': app.user.id }) }}"  class="btn btn-primary">Continue Application</a>
+    </div>
+</div>
+{% endblock %}

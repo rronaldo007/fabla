@@ -1,0 +1,74 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Complete Your Candidate Profile{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="mb-4">Complete Your Candidate Profile</h1>
+
+    {% if form_errors(form) %}
+        <div class="alert alert-danger">
+            {{ form_errors(form) }}
+        </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {{ form_start(form) }}
+
+        <div class="mb-3">
+            {{ form_label(form.programEntryDate, 'Program Entry Date') }}
+            {{ form_widget(form.programEntryDate, { 'attr': { 'class': 'form-control' } }) }}
+            {{ form_errors(form.programEntryDate) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.currentYear, 'Current Academic Year') }}
+            {{ form_widget(form.currentYear, { 'attr': { 'class': 'form-control' } }) }}
+            {{ form_errors(form.currentYear) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.currentSchool, 'Current School') }}
+            {{ form_widget(form.currentSchool, { 'attr': { 'class': 'form-control' } }) }}
+            {{ form_errors(form.currentSchool) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.specialization, 'Specialization') }}
+            {{ form_widget(form.specialization, { 'attr': { 'class': 'form-control' } }) }}
+            {{ form_errors(form.specialization) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.nationality, 'Nationality') }}
+            {{ form_widget(form.nationality, { 'attr': { 'class': 'form-control' } }) }}
+            {{ form_errors(form.nationality) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.userProfile, 'User Profile') }}
+            {{ form_widget(form.userProfile, { 'attr': { 'class': 'form-control' } }) }}
+            {{ form_errors(form.userProfile) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.studentCardPath, 'Upload Student Card') }}
+            {{ form_widget(form.studentCardPath, { 'attr': { 'class': 'form-control-file' } }) }}
+            {{ form_errors(form.studentCardPath) }}
+         
+            {% if submission and submission.candidateProfile and submission.candidateProfile.studentCardPath %}
+                <div class="mt-2">
+                    <p>Current File: 
+                        <a href="{{ asset('uploads/student_cards/' ~ submission.candidateProfile.studentCardPath) }}" target="_blank">
+                            {{ submission.candidateProfile.studentCardPath }}
+                        </a>
+                    </p>
+                </div>
+            {% endif %}
+         </div>
+
+        <button type="submit" class="btn btn-primary">Submit Application</button>
+        {{ form_end(form) }}
+    </form>
+</div>
+{% endblock %}

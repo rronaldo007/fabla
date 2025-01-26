@@ -84,6 +84,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    private string $currentState;
+
     public function isActive(): ?bool
     {
         return $this->is_active;
@@ -210,6 +212,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmailValidationTokenExpiresAt(?\DateTimeInterface $expiresAt): static
     {
         $this->emailValidationTokenExpiresAt = $expiresAt;
+        return $this;
+    }
+
+    public function getCurrentState(): string
+    {
+        return $this->currentState;
+    }
+
+    public function setCurrentState(string $state): self
+    {
+        $this->currentState = $state;
         return $this;
     }
 }

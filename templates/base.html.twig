@@ -37,7 +37,11 @@
                         <a class="nav-link" href="{{ path('app_researc_areas') }}">Research Areas</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_apply') }}">Apply</a>
+                        {% if app.user and app.user.isActive %}
+                        <a class="nav-link" href="{{ path('app_apply', { 'id': app.user.id }) }}">Apply</a>
+                            {% else %}
+                                <a class="nav-link" href="{{ path('app_login') }}">Apply</a>
+                        {% endif %}
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/contact">Contact</a>
@@ -106,7 +110,8 @@
                     <ul class="list-unstyled">
                         <li><a href="{{ path('app_about') }}" class="text-decoration-none text-white">About Us</a></li>
                         <li><a href="{{ path('app_contact') }}" class="text-decoration-none text-white">Contact</a></li>
-                        <li><a href="{{ path('app_apply') }}" class="text-decoration-none text-white">Apply</a></li>
+                        
+                        <li><a href="{{ path('app_apply_page') }}" class="text-decoration-none text-white">Apply</a></li>
                     </ul>
                 </div>
                 <div class="col-md-3 text-md-end">

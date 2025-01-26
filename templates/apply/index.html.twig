@@ -58,7 +58,13 @@
     <section class="text-center bg-light py-5 rounded">
         <h2 class="h3 text-primary">Start Your Application</h2>
         <p class="mb-4">Take the first step to becoming part of FABLAB's elite community.</p>
-        <a href="/apply/form" class="btn btn-primary btn-lg me-2">Apply Now</a>
+        {% if app.user and app.user.isActive %}
+        <a href="{{ path('app_apply', {'id': app.user.id}) }}" class="btn btn-primary btn-lg me-2">Apply Now</a>
+        {% elseif app.user and not app.user.isActive %}
+        <a href="{{ path('app_home') }}" class="btn btn-primary btn-lg me-2">Apply Now</a>
+        {% else %}
+        <a href="{{ path('app_login') }}" class="btn btn-primary btn-lg me-2">Apply Now</a>
+        {% endif %}
         <a href="/contact" class="btn btn-outline-secondary btn-lg">Need Help?</a>
     </section>
 </div>
