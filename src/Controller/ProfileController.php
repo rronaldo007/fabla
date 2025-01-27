@@ -20,11 +20,12 @@ final class ProfileController extends AbstractController
     public function index(int $id, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
-        $userProfile = $em->getRepository(UserProfile::class)->find($id);
         
-        if (!$userProfile || $user->getId() !== $userProfile->getUser()->getId()) {
+        if (!$user) {
             return $this->redirectToRoute('app_four_o_four');
         }
+        $userProfile = $this->getUser()->getUserProfile();
+
 
         return $this->render('profile/index.html.twig', [
             'user' => $user,

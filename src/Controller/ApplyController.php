@@ -8,6 +8,7 @@ use App\Form\CandidateProfileType;
 use App\Entity\UserProfile;
 use App\Service\SubmissionWorkflowService;
 use App\Entity\SubmissionWorkflow;
+use App\Repository\UserProfileRepository;
 
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -33,7 +34,7 @@ final class ApplyController extends AbstractController
     Request $request,
     SubmissionWorkflowService $submissionWorkflowService,
     ): Response {
-        $userProfile = $entityManager->getRepository(UserProfile::class)->find($id);
+        $userProfile = $this->getUser()->getUserProfile();
 
         if (!$userProfile) {
             throw $this->createNotFoundException('UserProfile not found.');
