@@ -19,6 +19,9 @@ class SubjectStudy
     #[ORM\Column(length: 255)]
     private ?string $videoPresantation = null;
 
+    #[ORM\Column(type: 'text')]
+    private ?string $description = null;
+
     #[ORM\OneToOne(mappedBy: 'subject', cascade: ['persist', 'remove'])]
     private ?Submission $submission = null;
 
@@ -69,6 +72,18 @@ class SubjectStudy
         }
 
         $this->submission = $submission;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(string $description): static
+    {
+        $this->description = $description;
 
         return $this;
     }
