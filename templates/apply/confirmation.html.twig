@@ -27,8 +27,22 @@
     </ul>
 
     <div class="mt-4">
-        <a href="{{ path('app_profile', { 'id': app.user.userProfile.id }) }}"  class="btn btn-primary">View Your Profile</a>
-        <a href="{{ path('app_apply', { 'id': app.user.id }) }}"  class="btn btn-primary">Continue Application</a>
+
+        {% if submission.isCandidateAccepted %}
+            <p>Congratulations! Your application has been accepted.</p>
+            <a href="{{ path('application_results', { 'id': submission.id }) }}"  class="btn btn-primary">View Your Profile</a>
+        {% else %}
+            <a href="{{ path('app_profile', { 'id': app.user.userProfile.id }) }}"  class="btn btn-primary">View Your Profile</a>
+
+            {% if submission.currentState == 'under_review' %}
+            <p>Thank you for your application! Your application is currently under review.</p>
+            {% elseif submission.isSubmissionAccepted %}
+            <a href="{{ path('app_apply_finish') }}"  class="btn btn-primary">Continue Application</a>
+
+            {% else %}
+            <p href="{{ path('app_home') }}"  class="">Pending ... </p>
+            {% endif %}
+        {% endif %}
     </div>
 </div>
 {% endblock %}

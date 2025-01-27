@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Submission Results{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="h3 mb-4 fw-bold text-center text-primary">Application Results</h1>
+
+    {% if submission.currentState == 'under_review' %}
+        <p class="text-center text-muted">Your application is currently under review. Please check back later for updates.</p>
+    {% elseif submission.currentState == 'not_selected' %}
+        <p class="text-center text-danger">Unfortunately, your application was not selected. Thank you for your interest.</p>
+    {% elseif submission.currentState == 'selected' %}
+        <p class="text-center text-success">Congratulations! Your application has been selected.</p>
+        <p class="text-center">Location: <strong>{{ submission.selectionLocation }}</strong></p>
+        <p class="text-center">Start Date: <strong>{{ submission.selectionDate|date('F j, Y') }}</strong></p>
+    {% endif %}
+</div>
+{% endblock %}

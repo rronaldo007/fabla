@@ -5,6 +5,10 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     upload_directory: '%kernel.project_dir%/public/candidate_uploads'
+    target_directory: '%kernel.project_dir%/public/uploads'
+    cv_directory: '%kernel.project_dir%/public/uploads/cvs'
+    video_directory: '%kernel.project_dir%/public/uploads/videos'
+    upload_studencard: '%kernel.project_dir%/public/uploads/studencard'
 services:
     # default configuration for services in *this* file
     _defaults:
