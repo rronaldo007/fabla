@@ -107,5 +107,78 @@ final class ApplyController extends AbstractController
         ]);
     }
 
+    #[Route('/application/finish', name:'app_apply_finish')]
+    public function finish(Request $request): Response
+    {
+       $user = $this->getUser();
+       if (!$user) {
+           $this->addFlash('error', 'You must be logged in.');
+           return $this->redirectToRoute('app_login');
+       }
+    
+       $candidateProfile = $user->getUserProfile()?->getCandidateProfile();
+       if (!$candidateProfile) {
+           throw $this->createNotFoundException('Candidate profile not found');
+       }
+    
+       $submission = $this->submissionRepository->findOneBy([
+           'candidateProfile' => $candidateProfile,
+       ]);
+    
+       if (!$submission) {
+           throw $this->createNotFoundException('No active submission found');
+       }
+    
+       $combinedForm = $this->createFormBuilder(null, [
+        'csrf_protection' => true,
+        'method' => 'POST',
+        'action' => $this->generateUrl('app_apply_finish')
+    ])
+        ->add('subject', SubjectStudyType::class, [
+            'data' => new SubjectStudy()
+        ])
+        ->add('cv', CandidateCvType::class, [
+            'data' => $candidateProfile
+        ])
+        ->getForm();
+    
+       $combinedForm->handleRequest($request);
+       
+       if ($combinedForm->isSubmitted()) {
+        if (!$combinedForm->isValid()) {
+            dump($combinedForm->getErrors(true));
+        }
+    }
+       if ($request->isMethod('POST') && $combinedForm->isSubmitted() && $combinedForm->isValid()) {
+           $data = $combinedForm->getData();
+           $subject = $data['subject'];
+           
+           $submission->setSubject($subject);
+           $subject->setSubmission($submission);
+           
+           $submission_workflow = new SubmissionWorkflow();
+           $submission_workflow->setSubmission($submission);
+           $submission_workflow->setState('under_review');
+           $submission->addSubmissionWorkflow($submission_workflow);
+    
+           $this->entityManager->persist($subject);
+           $this->entityManager->persist($submission);
+           $this->entityManager->persist($submission_workflow);
+           $this->entityManager->persist($candidateProfile);
+           $this->entityManager->flush();
+
+           $this->addFlash('success','Your application has been submitted successfully.');
+    
+           return $this->redirectToRoute('application_confirmation', [
+               'id' => $submission->getId(),
+           ]);
+       }
+    
+       return $this->render('apply/finish_submission.html.twig', [
+           'form' => $combinedForm->createView(),
+           'submission' => $submission
+       ]);
+    }
+
     
 }
