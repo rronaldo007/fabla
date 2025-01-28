@@ -31,6 +31,9 @@
         {% if submission.isCandidateAccepted %}
             <p>Congratulations! Your application has been accepted.</p>
             <a href="{{ path('application_results', { 'id': submission.id }) }}"  class="btn btn-primary">View Your Profile</a>
+            {% if submission.isCandidateAccepted %}
+            <a href="{{ path('application_results', { 'id': submission.id }) }}"  class="btn btn-primary">Go lab</a>
+            {% endif %}
         {% else %}
             <a href="{{ path('app_profile', { 'id': app.user.userProfile.id }) }}"  class="btn btn-primary">View Your Profile</a>
 
@@ -42,6 +45,7 @@
             {% else %}
             <p href="{{ path('app_home') }}"  class="">Pending ... </p>
             {% endif %}
+            
         {% endif %}
     </div>
 </div>

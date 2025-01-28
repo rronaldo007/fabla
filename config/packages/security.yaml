@@ -54,3 +54,4 @@ security:
         - { path: ^/validate/email, roles:  [ROLE_ADMIN, ROLE_JURY, ROLE_CANDIDATE] }
         - { path: ^/profile/completion, roles:  [ROLE_ADMIN, ROLE_JURY, ROLE_CANDIDATE] }
         - { path: ^/profile, roles:  [ROLE_ADMIN, ROLE_JURY, ROLE_CANDIDATE] }
+        - { path: ^/planning, roles:  [ROLE_ADMIN, ROLE_JURY, ROLE_CANDIDATE] }

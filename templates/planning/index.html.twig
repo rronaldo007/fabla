@@ -1,0 +1,195 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Shared Resources Planning{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .fc-event {
+            cursor: pointer;
+        }
+        #calendar {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .table-responsive {
+            margin-bottom: 2rem;
+        }
+        .fc-toolbar-title {
+            font-size: 1.25em !important;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="mb-4 text-primary">Shared Resources Planning</h1>
+
+    <!-- Table for planning -->
+    <div class="table-responsive">
+        <h3 class="text-secondary mb-3">Reservation Table</h3>
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Resource</th>
+                    <th>Date</th>
+                    <th>Time Slot</th>
+                    <th>Reserved By</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reservation in reservations %}
+                    <tr>
+                        <td>{{ reservation.resource.name }}</td>
+                        <td>{{ reservation.startTime|slice(0, 10) }}</td>
+                        <td>
+                            {% if reservation.startTime|slice(11, 5) == '08:00' %}
+                                Morning (08:00 - 12:00)
+                            {% else %}
+                                Afternoon (13:00 - 17:00)
+                            {% endif %}
+                        </td>
+                        <td>{{ reservation.reservedBy.firstName }} {{ reservation.reservedBy.lastName }}</td>
+                        <td>
+                            {% if app.user and reservation.id in user_reservations|default([]) %}
+                                <a href="{{ path('app_reservation_edit', {'id': reservation.id}) }}" class="btn btn-sm btn-warning me-2">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a>
+                                <a href="{{ path('app_reservation_delete', {'id': reservation.id}) }}" 
+                                   class="btn btn-sm btn-danger"
+                                   onclick="return confirm('Are you sure you want to delete this reservation?')">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                                <a href="{{ path('app_reservation_exchange', {'id': reservation.id}) }}" 
+                                   class="btn btn-sm btn-warning"
+                                   onclick="return confirm('Are you sure you want to delete this reservation?')">
+                                    <i class="bi bi-trash"></i> Exchnage
+                                </a>
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center">No reservations found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Calendar for planning -->
+    <h3 class="text-secondary mt-5 mb-3">Reservation Calendar</h3>
+    <div id="calendar" class="mb-5"></div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <script>
+        let calendar = null;
+
+        function destroyCalendar() {
+            if (calendar) {
+                calendar.destroy();
+                calendar = null;
+            }
+        }
+
+        async function fetchCalendarEvents() {
+            try {
+                const response = await fetch('{{ path('app_calendar_events') }}');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching calendar events:', error);
+                return [];
+            }
+        }
+
+        async function initializeCalendar() {
+            console.log("Initializing calendar...");
+            
+            destroyCalendar();
+
+            const calendarEl = document.getElementById('calendar');
+            if (!calendarEl) {
+                console.error("Calendar element not found!");
+                return;
+            }
+
+            try {
+                // Initialize with current events
+                const initialEvents = {{ calendarEvents|raw }};
+                
+                calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'timeGridDay',
+                    height: 'auto',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'timeGridDay,timeGridWeek,dayGridMonth'
+                    },
+                    slotMinTime: '08:00:00',
+                    slotMaxTime: '18:00:00',
+                    allDaySlot: false,
+                    slotDuration: '01:00:00',
+                    events: initialEvents,
+                    eventDidMount: function(info) {
+                        info.el.title = info.event.title;
+                    },
+                    eventClick: function(info) {
+                        console.log('Event clicked:', info.event);
+                    },
+                    datesSet: async function(dateInfo) {
+                        // Fetch and update events when date range changes
+                        const events = await fetchCalendarEvents();
+                        calendar.removeAllEvents();
+                        calendar.addEventSource(events);
+                    }
+                });
+
+                calendar.render();
+                console.log("Calendar rendered successfully");
+
+                // Set up periodic refresh
+                setInterval(async () => {
+                    const events = await fetchCalendarEvents();
+                    calendar.removeAllEvents();
+                    calendar.addEventSource(events);
+                }, 30000); // Refresh every 30 seconds
+
+            } catch (error) {
+                console.error("Error initializing calendar:", error);
+            }
+        }
+
+        // Handle all possible page load scenarios
+        function handlePageLoad() {
+            console.log("Page load handler triggered");
+            setTimeout(initializeCalendar, 0);
+        }
+
+        // Regular page load
+        document.addEventListener('DOMContentLoaded', handlePageLoad);
+
+        // Turbo load
+        document.addEventListener('turbo:load', handlePageLoad);
+        document.addEventListener('turbo:before-render', destroyCalendar);
+
+        // Stimulus load (if using Stimulus)
+        document.addEventListener('stimulus:load', handlePageLoad);
+
+        // Immediate load if document is already ready
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            handlePageLoad();
+        }
+    </script>
+{% endblock %}

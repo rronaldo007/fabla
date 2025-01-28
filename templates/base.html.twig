@@ -20,7 +20,7 @@
 </head>
 <body>
 
-    {% if app.user.role.name == 'ROLE_CANDIDATE' %} 
+    {% if app.user and app.user.role.name == 'ROLE_CANDIDATE' or not app.user %} 
         <nav class="container navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{{ path('app_home') }}">FABLAB</a>
@@ -43,6 +43,22 @@
                             <a class="nav-link" href="{{ path('app_apply', { 'id': app.user.id }) }}">Apply</a>
                                 {% else %}
                                     <a class="nav-link" href="{{ path('app_login') }}">Apply</a>
+                            {% endif %}
+                        </li>
+                        <li>
+                            {% if app.user  %}
+                                {% set userSubmissions = get_user_submissions() %}
+                                {% if userSubmissions and userSubmissions.currentState == 'under_review' %}
+                                <a class="nav-link" href="{{ path('application_results', { 'id': userSubmissions.id }) }}">Visite Lab</a>
+                                {% endif %}
+                            {% endif %}
+                        </li>
+                        <li>
+                            {% if app.user  %}
+                                {% set userSubmissions = get_user_submissions() %}
+                                {% if userSubmissions and userSubmissions.isCandidateAccepted %}
+                                    <a class="nav-link" href="{{ path('app_planning') }}">Planning</a>
+                                {% endif %}
                             {% endif %}
                         </li>
                         <li class="nav-item">
@@ -73,7 +89,7 @@
         </nav>
     {% endif %}
 
-        {% if app.user.role.name == 'ROLE_ADMIN' %}  
+        {% if app.user and app.user.role.name == 'ROLE_ADMIN' %}  
         <nav class="container navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{{ path('app_home') }}">FABLAB</a>
@@ -90,6 +106,9 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('admin_selected_candidates') }}">Selected Candidates</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_planning') }}">Planning</a>
                         </li>
                     </ul>
                     <ul class="navbar-nav">
