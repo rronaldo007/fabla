@@ -63,6 +63,13 @@ final class ApplyController extends AbstractController
             return $this->redirectToRoute('app_four_o_four');
         }
 
+
+        // Check if edition is current
+        if (!$edition->isCurrent()) {
+            $this->addFlash('error', 'This edition is not currently accepting applications.');
+            return $this->redirectToRoute('app_apply_page');
+        }
+
         $userProfile = $this->getUser()->getUserProfile();
 
         $existingSubmission = $entityManager->getRepository(Submission::class)
