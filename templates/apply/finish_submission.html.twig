@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Complete Your Application{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1 class="mb-4">Complete Your Application</h1>
+
+        {# Flash messages #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        {{ form_start(form, {
+            'attr': {
+                'id': 'finish-submission-form',
+                'enctype': 'multipart/form-data',
+                'class': 'needs-validation'
+            }
+        }) }}
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Subject Information</h2>
+                </div>
+                <div class="card-body">
+                    {{ form_row(form.subject.name) }}
+                    {{ form_row(form.subject.description) }}
+                    {{ form_row(form.subject.videoPresantation) }}
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">CV Upload</h2>
+                </div>
+                <div class="card-body">
+                    {{ form_row(form.cv.CV) }}
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    Submit Application
+                </button>
+            </div>
+
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

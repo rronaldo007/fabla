@@ -19,29 +19,19 @@ final class ProfileController extends AbstractController
     #[Route('/profile/{id<\d+>}', name: 'app_profile')]
     public function index(int $id, EntityManagerInterface $em): Response
     {
-    $user = $this->getUser();
-    
-    if ($user->getId() !== $id) {
-        throw $this->createAccessDeniedException();
-    }
+        $user = $this->getUser();
+        
+        if (!$user) {
+            return $this->redirectToRoute('app_four_o_four');
+        }
+        $userProfile = $this->getUser()->getUserProfile();
 
-    $workflowStates = $em->getRepository(WorkflowState::class)
-       ->findBy(['user' => $user], ['createdAt' => 'DESC']);
 
-    $userProfile = $user->getUserProfile();
-    
-    // Create profile if doesn't exist
-    if (!$userProfile) {
-        $userProfile = new UserProfile();
-        $userProfile->setUser($user);
-        $em->persist($userProfile);
-        $em->flush();
-    }
-
-    return $this->render('profile/index.html.twig', [
-        'user' => $user,
-        'profile' => $userProfile
-    ]);
+        return $this->render('profile/index.html.twig', [
+            'user' => $user,
+            'profile' => $userProfile,
+            'candidateProfile' => $userProfile->getCandidateProfile()
+        ]);
     }
 
     #[Route('/profile-completion/{id}', name: 'app_profile_completion')]

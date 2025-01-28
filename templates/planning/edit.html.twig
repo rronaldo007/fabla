@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Reservation{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">Edit Reservation</h2>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+                    
+                    <div class="mb-3">
+                        {{ form_label(form.resource) }}
+                        {{ form_widget(form.resource) }}
+                        {{ form_errors(form.resource) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.startTime) }}
+                        {{ form_widget(form.startTime) }}
+                        {{ form_errors(form.startTime) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.timeSlot) }}
+                        {{ form_widget(form.timeSlot) }}
+                        {{ form_errors(form.timeSlot) }}
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ path('app_planning') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

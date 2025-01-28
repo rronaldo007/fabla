@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Lab Resources{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="h3 mb-4 fw-bold text-center text-primary">Research Lab Resources</h1>
+    
+    <div class="text-center mb-5">
+        <p class="lead">Welcome to our research laboratory resource management system. Here you can find all available equipment and facilities for your research projects.</p>
+        <p>To ensure efficient use of our lab resources, please check the current reservations before planning your experiments.</p>
+    </div>
+
+    <div class="mt-4">
+        <h2 class="h4 mb-4">Available Resources</h2>
+        
+        {% if resources|length > 0 %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for resource in resources %}
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ resource.name }}</h5>
+                                {% if resource.description %}
+                                    <p class="card-text">{{ resource.description }}</p>
+                                {% endif %}
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        Available since: {{ resource.createdAt|date('Y-m-d H:i') }}
+                                    </small>
+                                </p>
+                                
+                                {% if resource.reservations|length > 0 %}
+                                    <div class="mt-2 mb-3">
+                                        <h6 class="card-subtitle mb-2 text-muted">Current Reservations</h6>
+                                        <ul class="list-unstyled">
+                                            {% for reservation in resource.reservations %}
+                                                <li>
+                                                    <small>
+                                                        {{ reservation.startTime|date('Y-m-d H:i') }} - 
+                                                        {{ reservation.endTime|date('Y-m-d H:i') }}
+                                                    </small>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="mt-auto">
+                                    <a href="{{ path('app_reservation_new', {'id': resource.id}) }}" 
+                                       class="btn btn-primary w-100">
+                                        Make Reservation
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">No resources are currently available.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
