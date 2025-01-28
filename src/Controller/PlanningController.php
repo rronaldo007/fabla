@@ -18,64 +18,64 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 final class PlanningController extends AbstractController
 {
     #[Route('/planning', name: 'app_planning')]
-public function index(EntityManagerInterface $entityManager): Response
-{
-    $resources = $entityManager->getRepository(SharedResource::class)->findAll();
-    $reservations = $entityManager->getRepository(Reservation::class)->findAll();
-    
-    $calendarEvents = [];
-    $formattedReservations = [];
-    $currentUser = $this->getUser();
-    $userReservationIds = [];
-    
-    foreach ($reservations as $reservation) {
-        $startTime = $reservation->getStartTime();
-        $endTime = $reservation->getEndTime();
+    public function index(EntityManagerInterface $entityManager): Response
+    {
+        $resources = $entityManager->getRepository(SharedResource::class)->findAll();
+        $reservations = $entityManager->getRepository(Reservation::class)->findAll();
         
-        if ($startTime instanceof \DateTime && $endTime instanceof \DateTime) {
-            // Format calendar events
-            $calendarEvents[] = [
-                'title' => sprintf(
-                    '%s - %s %s (%s)', 
-                    $reservation->getResource()->getName(),
-                    $reservation->getReservedBy()->getUserProfile()->getFirstName(),
-                    $reservation->getReservedBy()->getUserProfile()->getLastName(),
-                    $startTime->format('H:i') == '08:00' ? 'AM' : 'PM'
-                ),
-                'start' => $startTime->format('Y-m-d\TH:i:s'),
-                'end' => $endTime->format('Y-m-d\TH:i:s'),
-                'backgroundColor' => $startTime->format('H:i') == '08:00' ? '#007bff' : '#17a2b8',
-                'borderColor' => $startTime->format('H:i') == '08:00' ? '#0056b3' : '#138496'
-            ];
+        $calendarEvents = [];
+        $formattedReservations = [];
+        $currentUser = $this->getUser();
+        $userReservationIds = [];
+        
+        foreach ($reservations as $reservation) {
+            $startTime = $reservation->getStartTime();
+            $endTime = $reservation->getEndTime();
             
-            // Format table data
-            $formattedReservations[] = [
-                'id' => $reservation->getId(),
-                'resource' => [
-                    'name' => $reservation->getResource()->getName()
-                ],
-                'startTime' => $startTime->format('Y-m-d H:i'),
-                'endTime' => $endTime->format('Y-m-d H:i'),
-                'reservedBy' => [
-                    'firstName' => $reservation->getReservedBy()->getUserProfile()->getFirstName(),
-                    'lastName' => $reservation->getReservedBy()->getUserProfile()->getLastName()
-                ]
-            ];
-            
-            // Track user's reservations
-            if ($currentUser && $reservation->getReservedBy() === $currentUser) {
-                $userReservationIds[] = $reservation->getId();
+            if ($startTime instanceof \DateTime && $endTime instanceof \DateTime) {
+                // Format calendar events
+                $calendarEvents[] = [
+                    'title' => sprintf(
+                        '%s - %s %s (%s)', 
+                        $reservation->getResource()->getName(),
+                        $reservation->getReservedBy()->getUserProfile()->getFirstName(),
+                        $reservation->getReservedBy()->getUserProfile()->getLastName(),
+                        $startTime->format('H:i') == '08:00' ? 'AM' : 'PM'
+                    ),
+                    'start' => $startTime->format('Y-m-d\TH:i:s'),
+                    'end' => $endTime->format('Y-m-d\TH:i:s'),
+                    'backgroundColor' => $startTime->format('H:i') == '08:00' ? '#007bff' : '#17a2b8',
+                    'borderColor' => $startTime->format('H:i') == '08:00' ? '#0056b3' : '#138496'
+                ];
+                
+                // Format table data
+                $formattedReservations[] = [
+                    'id' => $reservation->getId(),
+                    'resource' => [
+                        'name' => $reservation->getResource()->getName()
+                    ],
+                    'startTime' => $startTime->format('Y-m-d H:i'),
+                    'endTime' => $endTime->format('Y-m-d H:i'),
+                    'reservedBy' => [
+                        'firstName' => $reservation->getReservedBy()->getUserProfile()->getFirstName(),
+                        'lastName' => $reservation->getReservedBy()->getUserProfile()->getLastName()
+                    ]
+                ];
+                
+                // Track user's reservations
+                if ($currentUser && $reservation->getReservedBy() === $currentUser) {
+                    $userReservationIds[] = $reservation->getId();
+                }
             }
         }
+        
+        return $this->render('planning/index.html.twig', [
+            'resources' => $resources,
+            'reservations' => $formattedReservations,
+            'calendarEvents' => json_encode($calendarEvents),
+            'user_reservations' => $userReservationIds
+        ]);
     }
-    
-    return $this->render('planning/index.html.twig', [
-        'resources' => $resources,
-        'reservations' => $formattedReservations,
-        'calendarEvents' => json_encode($calendarEvents),
-        'user_reservations' => $userReservationIds
-    ]);
-}
 
 
     #[Route('/reservation/new/{id}', name: 'app_reservation_new')]
