@@ -27,14 +27,16 @@ final class HomeController extends AbstractController
     public function index(SubmissionRepository $submissionRepository): Response
     {
         $user = $this->getUser();
-        $userProfile = $user->getUserProfile();
+        $userProfile =null;
+        if ($user)
+            $userProfile = $user->getUserProfile();
         
-        if ($userProfile && $userProfile->getCandidateProfile()) {
-            $submissions = $this->submissionRepository
-                ->findBy(['candidateProfile' => $userProfile->getCandidateProfile()]);
-        } else {
-            $submissions = [];
-        }
+            if ($userProfile && $userProfile->getCandidateProfile()) {
+                $submissions = $this->submissionRepository
+                    ->findBy(['candidateProfile' => $userProfile->getCandidateProfile()]);
+            } else {
+                $submissions = [];
+            }
 
         return $this->render('home/index.html.twig', [
             'controller_name' => 'HomeController',

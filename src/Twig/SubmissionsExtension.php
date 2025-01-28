@@ -27,9 +27,11 @@ class SubmissionsExtension extends AbstractExtension
         $user = $this->security->getUser();
         if (!$user) {
             return null;
-        }
+        } else {
+            $userProfile = $user->getUserProfile();
 
-        $userProfile = $user->getUserProfile();
+        }
+        
         if ($userProfile && $userProfile->getCandidateProfile()) {
             return $this->submissionRepository->findOneBy([
                 'candidateProfile' => $userProfile->getCandidateProfile(),

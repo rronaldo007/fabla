@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Submission;
+use App\Entity\Edition;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -14,6 +16,21 @@ class SubmissionRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Submission::class);
+    }
+
+    public function findExistingSubmissionForUserAndEdition(User $user, Edition $edition): ?Submission
+    {
+        return $this->createQueryBuilder('s')
+        ->innerJoin('s.editions', 'e')
+        ->innerJoin('s.candidateProfile', 'cp')
+        ->innerJoin('cp.userProfile', 'up')
+        ->innerJoin('up.user', 'u')
+        ->where('e.id = :editionId')
+        ->andWhere('u.id = :userId')
+        ->setParameter('editionId', $edition->getId())
+        ->setParameter('userId', $user->getId())      
+        ->getQuery()
+        ->getOneOrNullResult();
     }
 
     //    /**

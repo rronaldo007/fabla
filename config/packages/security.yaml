@@ -47,8 +47,6 @@ security:
         - { path: ^/jury, roles: ROLE_JURY }
 
         # For app_apply_page
-        - { path: ^/apply/page, roles: ROLE_CANDIDATE }
-        - { path: ^/apply, roles: ROLE_CANDIDATE }
         - { path: ^/application/finish, roles: ROLE_CANDIDATE }
         - { path: ^/registration, roles: ROLE_CANDIDATE }
         - { path: ^/reservation, roles: ROLE_CANDIDATE }
