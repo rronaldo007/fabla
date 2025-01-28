@@ -28,3 +28,7 @@ services:
     App\Service\SubmissionWorkflowService:
         arguments:
             $submissionStateMachine: '@state_machine.submission_workflow' # Explicitly inject the submission workflow
+    
+    App\Repository\SubmissionRepository:
+        arguments:
+            $registry: '@doctrine'
