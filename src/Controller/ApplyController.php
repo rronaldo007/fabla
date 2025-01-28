@@ -11,6 +11,7 @@ use App\Repository\SubmissionRepository;
 use App\Form\SubjectStudyType;
 use App\Form\CandidateCvType;
 use App\Entity\SubjectStudy;
+use App\Entity\SharedResource;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -223,17 +224,25 @@ final class ApplyController extends AbstractController
     }
 
     #[Route('/apply/submission_results/{id}', name: 'application_results')]
-    public function applicationResults(int $id, EntityManagerInterface $entityManager): Response
+    public function applicationResults(
+        int $id, 
+        EntityManagerInterface $entityManager
+    ): Response
     {
-    $submission = $entityManager->getRepository(Submission::class)->find($id);
-
+        $submission = $entityManager->getRepository(Submission::class)->find($id);
+        
         // Check if the submission exists
         if (!$submission) {
             $this->addFlash('error', 'The requested submission does not exist.');
-            return $this->redirectToRoute('app_apply_page'); // Redirect to an appropriate route
+            return $this->redirectToRoute('app_apply_page');
         }
+        
+        // Fetch all shared resources
+        $resources = $entityManager->getRepository(SharedResource::class)->findAll();
+
         return $this->render('apply/results.html.twig', [
             'submission' => $submission,
+            'resources' => $resources,
         ]);
     }
 }

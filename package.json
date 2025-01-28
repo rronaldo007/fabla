@@ -24,6 +24,10 @@
         "build": "encore production --progress"
     },
     "dependencies": {
+        "@fullcalendar/core": "^6.1.15",
+        "@fullcalendar/daygrid": "^6.1.15",
+        "@fullcalendar/interaction": "^6.1.15",
+        "@fullcalendar/timegrid": "^6.1.15",
         "@hotwired/stimulus": "^3.2.2",
         "@hotwired/turbo": "^8.0.12",
         "@symfony/stimulus-bridge": "^3.2.3",

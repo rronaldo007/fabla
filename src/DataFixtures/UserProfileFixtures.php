@@ -103,8 +103,8 @@ class UserProfileFixtures extends Fixture
                 'role' => $candidateRole,
                 'is_active' => true,
                 'is_validated' => false,
-                'current_place' => 'new',
-                'workflow_states' => ['new'],
+                'current_place' => 'profile_completed',
+                'workflow_states' => ['profile_completed'],
                 'email_validation_token' => Uuid::v4()->toRfc4122(),
                 'email_validation_token_expires_at' => new \DateTime('+1 day'),
                 'profile' => [

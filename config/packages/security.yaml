@@ -51,6 +51,8 @@ security:
         - { path: ^/apply, roles: ROLE_CANDIDATE }
         - { path: ^/application/finish, roles: ROLE_CANDIDATE }
         - { path: ^/registration, roles: ROLE_CANDIDATE }
+        - { path: ^/reservation, roles: ROLE_CANDIDATE }
         - { path: ^/validate/email, roles:  [ROLE_ADMIN, ROLE_JURY, ROLE_CANDIDATE] }
         - { path: ^/profile/completion, roles:  [ROLE_ADMIN, ROLE_JURY, ROLE_CANDIDATE] }
         - { path: ^/profile, roles:  [ROLE_ADMIN, ROLE_JURY, ROLE_CANDIDATE] }
+        - { path: ^/planning, roles:  [ROLE_ADMIN, ROLE_JURY, ROLE_CANDIDATE] }
