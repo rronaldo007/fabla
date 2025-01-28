@@ -3,69 +3,137 @@
 {% block title %}Apply to FABLAB{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-    <header class="text-center mb-5">
-        <h1 class="display-4">Apply to FABLAB</h1>
-        <p class="lead">Join the innovators shaping the future of robotics and technology.</p>
-    </header>
-
-    <section class="mb-5">
-        <h2 class="h3 text-primary">Application Process</h2>
-        <p>
-            We invite brilliant minds passionate about robotics, innovation, and technology to apply for a chance to be part of FABLAB. Follow these steps to start your journey:
-        </p>
-        <div class="row">
-            <div class="col-md-4 text-center">
-                <div class="p-4 border rounded shadow-sm">
-                    <h3 class="h5">Step 1</h3>
-                    <p>Submit your personal details and academic background.</p>
-                </div>
-            </div>
-            <div class="col-md-4 text-center">
-                <div class="p-4 border rounded shadow-sm">
-                    <h3 class="h5">Step 2</h3>
-                    <p>Provide your research proposal and supporting documents.</p>
-                </div>
-            </div>
-            <div class="col-md-4 text-center">
-                <div class="p-4 border rounded shadow-sm">
-                    <h3 class="h5">Step 3</h3>
-                    <p>Await review and selection by our expert panel.</p>
+<div class="container-fluid px-0">
+    <!-- Hero Section -->
+    <div class="bg-primary text-white py-5">
+        <div class="container">
+            <div class="row justify-content-center text-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold mb-3">Shape the Future at FABLAB</h1>
+                    <p class="lead">Join a community of innovators and researchers dedicated to advancing robotics and technology.</p>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <section class="mb-5">
-        <h2 class="h3 text-primary">Why FABLAB?</h2>
-        <p>
-            FABLAB provides unparalleled access to advanced tools, mentorship, and a collaborative atmosphere. Our members work on groundbreaking projects that drive innovation in industrial and medical robotics, paving the way for technological excellence.
-        </p>
-        <div class="row">
-            <div class="col-md-6">
-                <ul>
-                    <li>Access to cutting-edge resources like 3D printers and AI platforms.</li>
-                    <li>Opportunities to collaborate with industry leaders.</li>
-                    <li>Join a network of forward-thinking innovators and researchers.</li>
-                </ul>
+    <div class="container py-5">
+        <!-- Available Editions Section -->
+        <section class="mb-5">
+            <div class="text-center mb-4">
+                <h2 class="h2 text-primary">Available Programs</h2>
+                <p class="text-muted">Select an edition to begin your application</p>
             </div>
-            <div class="col-md-6">
-                <img src="/images/fablab-team.jpg" class="img-fluid rounded shadow" alt="FABLAB team in action">
-            </div>
-        </div>
-    </section>
+            
+            <div class="row g-4">
+                {% for edition in editions %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="h4 mb-0">Edition {{ edition.year }}</h3>
+                                    {% if edition.isCurrent %}
+                                        <span class="badge bg-success">Current</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <ul class="list-unstyled mb-4">
+                                    <li class="mb-2">
+                                        <i class="bi bi-calendar-event me-2"></i>
+                                        Start: {{ edition.startApplication|date('d M Y') }}
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="bi bi-calendar-x me-2"></i>
+                                        Deadline: {{ edition.endApplication|date('d M Y') }}
+                                    </li>
+                                </ul>
 
-    <section class="text-center bg-light py-5 rounded">
-        <h2 class="h3 text-primary">Start Your Application</h2>
-        <p class="mb-4">Take the first step to becoming part of FABLAB's elite community.</p>
-        {% if app.user and app.user.isActive %}
-        <a href="{{ path('app_apply', {'id': app.user.id}) }}" class="btn btn-primary btn-lg me-2">Apply Now</a>
-        {% elseif app.user and not app.user.isActive %}
-        <a href="{{ path('app_home') }}" class="btn btn-primary btn-lg me-2">Apply Now</a>
-        {% else %}
-        <a href="{{ path('app_login') }}" class="btn btn-primary btn-lg me-2">Apply Now</a>
-        {% endif %}
-        <a href="/contact" class="btn btn-outline-secondary btn-lg">Need Help?</a>
-    </section>
+                                {% if edition.isCurrent %}
+                                    {% if app.user and app.user.isActive %}
+                                        <a href="{{ path('app_apply', {'id': edition.id}) }}" 
+                                        class="btn btn-primary w-100">Apply Now</a>
+                                    {% elseif app.user and not app.user.isActive %}
+                                        <a href="{{ path('app_home') }}" 
+                                        class="btn btn-secondary w-100">Complete Profile First</a>
+                                    {% else %}
+                                        <a href="{{ path('app_login') }}" 
+                                        class="btn btn-primary w-100">Login to Apply</a>
+                                    {% endif %}
+                                {% else %}
+                                    <button class="btn btn-secondary w-100" disabled>
+                                        {% if edition.isCurrent == false %}
+                                            Not Available
+                                        {% endif %}
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info text-center">
+                            <p class="mb-0">There are currently no open editions. Please check back later.</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Process Section -->
+        <section class="mb-5">
+            <div class="text-center mb-4">
+                <h2 class="h2 text-primary">Application Process</h2>
+                <p class="text-muted">Four simple steps to join FABLAB</p>
+            </div>
+            
+            <div class="row g-4">
+                {% set steps = [
+                    {icon: 'person-plus', title: 'Register', text: 'Create account & complete profile'},
+                    {icon: 'file-earmark-text', title: 'Submit', text: 'Upload your research proposal'},
+                    {icon: 'search', title: 'Review', text: 'Application evaluation'},
+                    {icon: 'check-circle', title: 'Decision', text: 'Receive final outcome'}
+                ] %}
+
+                {% for step in steps %}
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm text-center">
+                            <div class="card-body">
+                                <i class="bi bi-{{ step.icon }} display-5 text-primary mb-3"></i>
+                                <h3 class="h5">{{ step.title }}</h3>
+                                <p class="text-muted mb-0">{{ step.text }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Research Areas -->
+        <section>
+            <div class="text-center mb-4">
+                <h2 class="h2 text-primary">Research Areas</h2>
+                <p class="text-muted">Explore our fields of innovation</p>
+            </div>
+            
+            <div class="row g-4">
+                {% set areas = [
+                    {icon: 'robot', title: 'Robotics & AI', text: 'Develop next-generation robotics solutions'},
+                    {icon: 'cpu', title: 'Industrial Automation', text: 'Create smart manufacturing solutions'},
+                    {icon: 'heart-pulse', title: 'Medical Robotics', text: 'Advance healthcare through robotics'}
+                ] %}
+
+                {% for area in areas %}
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-{{ area.icon }} display-5 text-primary mb-3"></i>
+                                <h3 class="h5">{{ area.title }}</h3>
+                                <p class="text-muted mb-0">{{ area.text }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
 </div>
 {% endblock %}

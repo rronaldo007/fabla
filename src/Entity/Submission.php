@@ -10,7 +10,7 @@ use Symfony\UX\Turbo\Attribute\Broadcast;
 
 #[ORM\Entity(repositoryClass: SubmissionRepository::class)]
 #[Broadcast]
-class Submission
+class Submission 
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -42,9 +42,17 @@ class Submission
     #[ORM\OneToOne(inversedBy: 'submission', cascade: ['persist', 'remove'])]
     private ?SubjectStudy $subject = null;
 
+    /**
+     * @var Collection<int, Edition>
+     */
+    #[ORM\ManyToMany(targetEntity: Edition::class, inversedBy: 'submissions')]
+    #[ORM\JoinTable(name: 'submission_edition')]
+    private Collection $editions;
+
     public function __construct()
     {
         $this->submissionWorkflows = new ArrayCollection();
+        $this->editions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -126,8 +134,8 @@ class Submission
             }
         }
 
-    return $this;
-}
+        return $this;
+    }
 
     public function getCandidateProfile(): ?CandidateProfile
     {
@@ -149,6 +157,33 @@ class Submission
     public function setSubject(?SubjectStudy $subject): static
     {
         $this->subject = $subject;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Edition>
+     */
+    public function getEditions(): Collection
+    {
+        return $this->editions;
+    }
+
+    public function addEdition(Edition $edition): static
+    {
+        if (!$this->editions->contains($edition)) {
+            $this->editions->add($edition);
+            $edition->addSubmission($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEdition(Edition $edition): static
+    {
+        if ($this->editions->removeElement($edition)) {
+            $edition->removeSubmission($this);
+        }
 
         return $this;
     }

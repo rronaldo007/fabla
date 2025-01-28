@@ -12,6 +12,10 @@ use App\Form\SubjectStudyType;
 use App\Form\CandidateCvType;
 use App\Entity\SubjectStudy;
 use App\Entity\SharedResource;
+use App\Repository\EditionRepository;
+use App\Entity\Edition;
+use App\Entity\User;
+
 
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,7 +23,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 final class ApplyController extends AbstractController
 {
@@ -36,21 +39,37 @@ final class ApplyController extends AbstractController
         $this->submissionRepository = $submissionRepository;
         $this->slugger = $slugger;
     }
-    #[Route('/apply', name: 'app_apply_page')]
-    public function index(): Response
+
+    #[Route('/apply_page', name: 'app_apply_page')]
+    public function index(EditionRepository $editionRepository): Response
     {
+        $editions = $editionRepository->findBy([], ['year' => 'DESC']);
+        
         return $this->render('apply/index.html.twig', [
             'controller_name' => 'ApplyController',
+            'editions' => $editions,
         ]);
     }
 
     #[Route('/apply/{id}', name: 'app_apply')]
     public function apply(
-    int $id,
-    EntityManagerInterface $entityManager,
-    Request $request,
-    SubmissionWorkflowService $submissionWorkflowService,
+        int $id,
+        EntityManagerInterface $entityManager,
+        Request $request,
     ): Response {
+        // Get the edition first
+        $edition = $entityManager->getRepository(Edition::class)->find($id);
+        if (!$edition) {
+            return $this->redirectToRoute('app_four_o_four');
+        }
+
+
+        // Check if edition is current
+        if (!$edition->isCurrent()) {
+            $this->addFlash('error', 'This edition is not currently accepting applications.');
+            return $this->redirectToRoute('app_apply_page');
+        }
+
         $userProfile = $this->getUser()->getUserProfile();
 
         if (!$userProfile) {
@@ -66,14 +85,18 @@ final class ApplyController extends AbstractController
             $isNewCandidateProfile = true;
         }
 
-        $existingSubmission = $entityManager->getRepository(Submission::class)
-            ->findOneBy(['candidateProfile' => $candidateProfile]);
+        // Check for existing submission in this edition
+        // $existingSubmission = $entityManager->getRepository(Submission::class)
+        //     ->findOneBy([
+        //         'candidateProfile' => $candidateProfile,
+        //         'editions' => $edition
+        //     ]);
 
-        if ($existingSubmission) {
-            return $this->redirectToRoute('application_confirmation', [
-                'id' => $existingSubmission->getId(),
-            ]);
-        }
+        // if ($existingSubmission) {
+        //     return $this->redirectToRoute('application_confirmation', [
+        //         'id' => $existingSubmission->getId(),
+        //     ]);
+        // }
 
         $form = $this->createForm(CandidateProfileType::class, $candidateProfile);
         $form->handleRequest($request);
@@ -86,11 +109,12 @@ final class ApplyController extends AbstractController
                 $userId = $this->getUser()->getId();
                 $userDir = $this->getParameter('upload_studencard') . '/' . $userId;
                 !is_dir($userDir) && mkdir($userDir, 0755, true);
-                
+
                 $fileName = 'student_card.' . $file->guessExtension();
                 $file->move($userDir, $fileName);
                 $candidateProfile->setStudentCardPath('uploads/' . $userId . '/' . $fileName);
             }
+
 
             $submission = new Submission();
             $submission->setCandidateProfile($candidateProfile);
@@ -98,10 +122,16 @@ final class ApplyController extends AbstractController
             $submission->setIdentifier(bin2hex(random_bytes(5)));
             $submission->setIsSubmissionAccepted(false);
             $submission->setIsCandidateAccepted(false);
+            $edition->addSubmission($submission);
+
+            
+            // Add the submission to the edition
+            $submission->addEdition($edition);
 
             if ($isNewCandidateProfile) {
                 $entityManager->persist($candidateProfile);
             }
+
             $workflow = new SubmissionWorkflow();
             $workflow->setState('submitted');
             $submission->addSubmissionWorkflow($workflow);
@@ -117,6 +147,7 @@ final class ApplyController extends AbstractController
         return $this->render('apply/candidate_profile_form.html.twig', [
             'form' => $form->createView(),
             'submission' => null,
+            'edition' => $edition,
         ]);
     }
 
