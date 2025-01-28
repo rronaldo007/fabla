@@ -1,0 +1,97 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Candidates List{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="mb-4">All Candidates</h1>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Full Name</th>
+                <th>School</th>
+                <th>Specialization</th>
+                <th>Program Entry Date</th>
+                <th>Current Year</th>
+                <th>Nationality</th>
+                <th>Documents</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for submission in submissions %}
+                <tr>
+                    <td>{{ submission.candidateProfile.id }}</td>
+                    
+                    <td>
+                        {% if submission.candidateProfile.userProfile %}
+                            {{ submission.candidateProfile.userProfile.firstName }} {{ submission.candidateProfile.userProfile.lastName }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if submission.candidateProfile.currentSchool %}
+                            {{ submission.candidateProfile.currentSchool.name }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if submission.candidateProfile.specialization %}
+                            {{ submission.candidateProfile.specialization.name }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if submission.candidateProfile.programEntryDate %}
+                            {{ submission.candidateProfile.programEntryDate|date('Y-m-d') }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if submission.candidateProfile.currentYear %}
+                            {{ submission.candidateProfile.currentYear|date('Y') }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if submission.candidateProfile.nationality %}
+                            {{ submission.candidateProfile.nationality.name }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if submission.candidateProfile.CV %}
+                            <a href="{{ asset(submission.candidateProfile.CV) }}" class="btn btn-sm btn-primary me-2" target="_blank">
+                                <i class="fas fa-file-pdf"></i> CV
+                            </a>
+                        {% endif %}
+
+                        {% if submission.candidateProfile.studentCardPath %}
+                            <a href="{{ asset(submission.candidateProfile.studentCardPath) }}" class="btn btn-sm btn-secondary" target="_blank">
+                                <i class="fas fa-id-card"></i> Student Card
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="8" class="text-center">No submissions found</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
