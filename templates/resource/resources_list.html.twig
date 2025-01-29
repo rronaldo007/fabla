@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Shared Resources{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="mb-4">Shared Resources</h1>
+
+    <a href="{{ path('super_admin_new_resource') }}" class="btn btn-primary mb-3">Add Resource</a>
+    <a href="{{ path('super_admin_archived_resources') }}" class="btn btn-secondary mb-3">View Archived Resources</a>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Name</th>
+                <th>Marque et modèle</th>
+                <th>Commissioning Date</th>
+                <th>Created At</th>
+                <th>Archived</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resource in resources %}
+                <tr>
+                    <td>{{ resource.name }}</td>
+                    <td>{{ resource.brandModel }}</td>
+                    <td>{{ resource.commissioningDate|date('Y-m-d') }}</td>
+                    <td>{{ resource.createdAt|date('Y-m-d H:i') }}</td>
+                    <td>{{ resource.isArchived ? 'Yes' : 'No' }}</td>
+                    <td>
+                        <a href="{{ path('super_admin_edit_resource', {'id': resource.id}) }}" class="btn btn-sm btn-warning">Edit</a>
+                        {% if not resource.isArchived %}
+                            <a href="{{ path('super_admin_archive_resource', {'id': resource.id}) }}" class="btn btn-sm btn-danger"
+                               onclick="return confirm('Are you sure you want to archive this resource?');">Archive</a>
+                        {% endif %}
+                        {% if resource.isArchived %}
+                            <a href="{{ path('super_admin_restore_resource', {'id': resource.id}) }}" class="btn btn-sm btn-success"
+                               onclick="return confirm('Are you sure you want to restore this resource?');">Restore</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">No active resources found</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

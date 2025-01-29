@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ form.vars.value.id ? 'Edit Edition' : 'New Edition' }}{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="mb-4">{{ form.vars.value.id ? 'Edit Edition' : 'Create New Edition' }}</h1>
+
+    <div class="card">
+        <div class="card-body">
+            {{ form_start(form) }}
+                <div class="mb-3">
+                    {{ form_label(form.year, 'Year', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.year, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.year) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.startPublication, 'Start Publication', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.startPublication, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.startPublication) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.startApplication, 'Start Application', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.startApplication, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.startApplication) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.endApplication, 'End Application', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.endApplication, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.endApplication) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.announcementDate, 'Announcement Date', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.announcementDate, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.announcementDate) }}
+                </div>
+
+                <div class="form-check mb-3">
+                    {{ form_widget(form.isCurrent, {'attr': {'class': 'form-check-input'}}) }}
+                    {{ form_label(form.isCurrent, 'Is Current Edition?', {'label_attr': {'class': 'form-check-label'}}) }}
+                    {{ form_errors(form.isCurrent) }}
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

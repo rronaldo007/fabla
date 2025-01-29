@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ form.vars.value.id ? 'Edit Resource' : 'New Resource' }}{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="mb-4">{{ form.vars.value.id ? 'Edit Resource' : 'Create New Resource' }}</h1>
+
+    <div class="card">
+        <div class="card-body">
+            {{ form_start(form) }}
+                <div class="mb-3">
+                    {{ form_label(form.name, 'Resource Name', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.name) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.brandModel, 'Marque et modèle', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.brandModel, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.brandModel) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.commissioningDate, 'Date de mise en service', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.commissioningDate, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.commissioningDate) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.description) }}
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

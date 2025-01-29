@@ -36,6 +36,17 @@ class UserProfile
     #[ORM\OneToOne(mappedBy: 'userProfile', cascade: ['persist', 'remove'])]
     private ?CandidateProfile $candidateProfile = null;
 
+    #[ORM\Column(type: 'boolean')]
+    private bool $isArchived = false; // New property with default value
+
+    #[ORM\OneToOne(mappedBy: 'userProfile', cascade: ['persist', 'remove'])]
+    private ?JuryProfile $juryProfile = null;
+
+    public function __construct()
+    {
+        $this->isArchived = false;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -49,7 +60,6 @@ class UserProfile
     public function setFirstName(string $first_name): static
     {
         $this->first_name = $first_name;
-
         return $this;
     }
 
@@ -61,7 +71,6 @@ class UserProfile
     public function setLastName(string $last_name): static
     {
         $this->last_name = $last_name;
-
         return $this;
     }
 
@@ -73,7 +82,6 @@ class UserProfile
     public function setPhone(?string $phone): static
     {
         $this->phone = $phone;
-
         return $this;
     }
 
@@ -85,7 +93,6 @@ class UserProfile
     public function setAddress(?string $address): static
     {
         $this->address = $address;
-
         return $this;
     }
 
@@ -97,7 +104,6 @@ class UserProfile
     public function setDateOfBirth(?\DateTimeInterface $date_of_birth): static
     {
         $this->date_of_birth = $date_of_birth;
-
         return $this;
     }
 
@@ -109,7 +115,6 @@ class UserProfile
     public function setUser(?User $user): static
     {
         $this->user = $user;
-
         return $this;
     }
 
@@ -120,18 +125,50 @@ class UserProfile
 
     public function setCandidateProfile(?CandidateProfile $candidateProfile): static
     {
-        // unset the owning side of the relation if necessary
+        // Unset the owning side of the relation if necessary
         if ($candidateProfile === null && $this->candidateProfile !== null) {
             $this->candidateProfile->setUserProfile(null);
         }
 
-        // set the owning side of the relation if necessary
+        // Set the owning side of the relation if necessary
         if ($candidateProfile !== null && $candidateProfile->getUserProfile() !== $this) {
             $candidateProfile->setUserProfile($this);
         }
 
         $this->candidateProfile = $candidateProfile;
-
         return $this;
     }
+
+    public function isArchived(): bool
+    {
+        return $this->isArchived;
+    }
+
+    public function setArchived(bool $isArchived): self
+    {
+        $this->isArchived = $isArchived;
+        return $this;
+    }
+
+    public function getJuryProfile(): ?JuryProfile
+{
+    return $this->juryProfile;
+}
+
+public function setJuryProfile(?JuryProfile $juryProfile): static
+{
+    // Unset the owning side of the relation if necessary
+    if ($juryProfile === null && $this->juryProfile !== null) {
+        $this->juryProfile->setUserProfile(null);
+    }
+
+    // Set the owning side of the relation if necessary
+    if ($juryProfile !== null && $juryProfile->getUserProfile() !== $this) {
+        $juryProfile->setUserProfile($this);
+    }
+
+    $this->juryProfile = $juryProfile;
+
+    return $this;
+}
 }

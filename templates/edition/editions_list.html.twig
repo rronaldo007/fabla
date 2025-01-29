@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Editions List{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="mb-4">All Editions</h1>
+
+    <a href="{{ path('admin_new_edition') }}" class="btn btn-primary mb-3">Add New Edition</a>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Year</th>
+                <th>Start Publication</th>
+                <th>Start Application</th>
+                <th>End Application</th>
+                <th>Announcement Date</th>
+                <th>Is Current</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for edition in editions %}
+                <tr>
+                    <td>{{ edition.id }}</td>
+                    <td>{{ edition.year }}</td>
+                    <td>{{ edition.startPublication|date('Y-m-d H:i') }}</td>
+                    <td>{{ edition.startApplication|date('Y-m-d H:i') }}</td>
+                    <td>{{ edition.endApplication|date('Y-m-d H:i') }}</td>
+                    <td>{{ edition.announcementDate|date('Y-m-d H:i') }}</td>
+                    <td>
+                        {% if edition.isCurrent %}
+                            <span class="badge bg-success">Current</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Archived</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ path('admin_edit_edition', {'id': edition.id}) }}" class="btn btn-sm btn-warning">Edit</a>
+                        {% if edition.isCurrent %}
+                        <a href="{{ path('admin_archive_edition', {'id': edition.id}) }}" class="btn btn-sm btn-danger"
+                           onclick="return confirm('Are you sure you want to archive this edition?');">Archive
+                        </a>
+                        {% endif %}
+                        
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="8" class="text-center">No editions found</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

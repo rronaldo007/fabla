@@ -21,8 +21,17 @@ class SharedResource
     #[ORM\Column(type: "text", nullable: true)]
     private ?string $description = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $brandModel = null; // "Marque et modèle"
+
+    #[ORM\Column(type: "date", nullable: true)]
+    private ?\DateTimeInterface $commissioningDate = null; // "Date de mise en service"
+
     #[ORM\Column(type: "datetime", nullable: true)]
     private ?\DateTimeInterface $createdAt = null;
+
+    #[ORM\Column(type: "boolean")]
+    private bool $isArchived = false; // New property for archiving
 
     #[ORM\OneToMany(mappedBy: 'resource', targetEntity: Reservation::class, cascade: ['persist', 'remove'])]
     private Collection $reservations;
@@ -46,7 +55,6 @@ class SharedResource
     public function setName(string $name): self
     {
         $this->name = $name;
-
         return $this;
     }
 
@@ -58,7 +66,28 @@ class SharedResource
     public function setDescription(?string $description): self
     {
         $this->description = $description;
+        return $this;
+    }
 
+    public function getBrandModel(): ?string
+    {
+        return $this->brandModel;
+    }
+
+    public function setBrandModel(?string $brandModel): self
+    {
+        $this->brandModel = $brandModel;
+        return $this;
+    }
+
+    public function getCommissioningDate(): ?\DateTimeInterface
+    {
+        return $this->commissioningDate;
+    }
+
+    public function setCommissioningDate(?\DateTimeInterface $commissioningDate): self
+    {
+        $this->commissioningDate = $commissioningDate;
         return $this;
     }
 
@@ -70,7 +99,17 @@ class SharedResource
     public function setCreatedAt(?\DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
+        return $this;
+    }
 
+    public function isArchived(): bool
+    {
+        return $this->isArchived;
+    }
+
+    public function setArchived(bool $isArchived): self
+    {
+        $this->isArchived = $isArchived;
         return $this;
     }
 
@@ -88,19 +127,16 @@ class SharedResource
             $this->reservations[] = $reservation;
             $reservation->setResource($this);
         }
-
         return $this;
     }
 
     public function removeReservation(Reservation $reservation): self
     {
         if ($this->reservations->removeElement($reservation)) {
-            // Set the owning side to null (unless already changed)
             if ($reservation->getResource() === $this) {
                 $reservation->setResource(null);
             }
         }
-
         return $this;
     }
 }

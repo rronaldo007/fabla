@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Jury Members{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="mb-4">Jury Members</h1>
+
+    <a href="{{ path('super_admin_new_jury') }}" class="btn btn-primary mb-3">Add Jury Member</a>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Profession</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for jury in juryMembers %}
+                <tr>
+                    <td>{{ jury.userProfile.firstName }} {{ jury.userProfile.lastName }}</td>
+                    <td>{{ jury.email }}</td>
+                    <td>{{ jury.userProfile.phone ?: 'N/A' }}</td>
+                    {% if jury.userProfile.juryProfile %}
+                        <td>{{ jury.userProfile.juryProfile.profession  }}</td>
+                    {% else %}
+                        <td>N/A</td>
+                    {% endif%}
+                    <td>
+                        {% if jury.isActive %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-warning">Disabled</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if jury.isActive %}
+                            <a href="{{ path('super_admin_disable_jury', {'id': jury.id}) }}" class="btn btn-warning btn-sm">Disable</a>
+                        {% else %}
+                            <a href="{{ path('super_admin_enable_jury', {'id': jury.id}) }}" class="btn btn-success btn-sm">Enable</a>
+                        {% endif %}
+                        <a href="{{ path('super_admin_edit_jury', {'id': jury.id}) }}" class="btn btn-sm btn-primary">Edit</a>
+                        {% if jury.userProfile.isArchived %}
+                            <a href="{{ path('super_admin_restore_jury', {'id': jury.id}) }}" class="btn btn-sm btn-success">Unarchive</a>
+                        {% else %}
+                            <a href="{{ path('super_admin_archive_jury', {'id': jury.id}) }}" class="btn btn-sm btn-danger"
+                               onclick="return confirm('Are you sure you want to archive this jury member?');">Archive</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">No jury members found</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

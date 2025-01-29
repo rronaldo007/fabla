@@ -1,0 +1,57 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administrators{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="mb-4">Administrators</h1>
+
+    <a href="{{ path('super_admin_new_admin') }}" class="btn btn-primary mb-3">Add Administrator</a>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for admin in admins %}
+                <tr>
+                    <td>{{ admin.userProfile.firstName }} {{ admin.userProfile.lastName }}</td>
+                    <td>{{ admin.email }}</td>
+                    <td>{{ admin.userProfile.phone }}</td>
+                    <td>
+                        {% if admin.isActive %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-warning">Disabled</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if admin.isActive %}
+                            <a href="{{ path('super_admin_disable_admin', {'id': admin.id}) }}" class="btn btn-warning btn-sm">Disable</a>
+                        {% else %}
+                            <a href="{{ path('super_admin_enable_admin', {'id': admin.id}) }}" class="btn btn-success btn-sm">Enable</a>
+                        {% endif %}
+                        <a href="{{ path('super_admin_edit_admin', {'id': admin.id}) }}" class="btn btn-sm btn-primary">Edit</a>
+                        {% if admin.userProfile.isArchived %}
+                            <a href="{{ path('super_admin_restore_admin', {'id': admin.id}) }}" class="btn btn-sm btn-success">Unarchive</a>
+                        {% else %}
+                            <a href="{{ path('super_admin_archive_admin', {'id': admin.id}) }}" class="btn btn-sm btn-danger"
+                               onclick="return confirm('Are you sure you want to archive this administrator?');">Archive</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">No administrators found</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

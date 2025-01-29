@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Archived Resources{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="mb-4">Archived Resources</h1>
+
+    <a href="{{ path('super_admin_resources') }}" class="btn btn-secondary mb-3">Back to Resources</a>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Name</th>
+                <th>Marque et modèle</th>
+                <th>Commissioning Date</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resource in resources %}
+                <tr>
+                    <td>{{ resource.name }}</td>
+                    <td>{{ resource.brandModel }}</td>
+                    <td>{{ resource.commissioningDate|date('Y-m-d') }}</td>
+                    <td>{{ resource.createdAt|date('Y-m-d H:i') }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4" class="text-center">No archived resources found</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
