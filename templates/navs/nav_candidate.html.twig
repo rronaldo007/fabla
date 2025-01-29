@@ -1,0 +1,26 @@
+<nav class="container navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ path('app_home') }}">FABLAB</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item"><a class="nav-link" href="{{ path('app_home') }}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ path('app_about') }}">About</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ path('app_researc_areas') }}">Research Areas</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ path('app_apply_page') }}">Apply</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ path('app_contact') }}">Contact</a></li>
+            </ul>
+            <ul class="navbar-nav">
+                {% if app.user %}
+                    <li class="nav-item"><a class="nav-link" href="{{ path('app_profile', {'id': app.user.id}) }}">My Profile</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ path('app_logout') }}">Logout</a></li>
+                {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{{ path('app_login') }}">Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ path('app_registration') }}">Register</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

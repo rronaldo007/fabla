@@ -13,134 +13,30 @@
     <style>
         .sticky-top {
             position: sticky;
-            top: 5;
+            top: 0;
             z-index: 1020;
         }
     </style>
 </head>
 <body>
 
-    {% if app.user and app.user.role.name == 'ROLE_CANDIDATE' or not app.user %} 
-        <nav class="container navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="{{ path('app_home') }}">FABLAB</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{{ path('app_home') }}">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_about') }}">About</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_researc_areas') }}">Research Areas</a>
-                        </li>
-                        <li class="nav-item">
-                            {% if app.user and app.user.isActive%}
-                            <a class="nav-link" href="{{ path('app_apply_page') }}">Apply</a>
-                                {% else %}
-                                    <a class="nav-link" href="{{ path('app_apply_page') }}">Apply</a>
-                            {% endif %}
-                        </li>
-                        <li>
-                            {% if app.user  %}
-                                {% set userSubmissions = get_user_submissions() %}
-                                {% if userSubmissions and userSubmissions.currentState == 'under_review' %}
-                                <a class="nav-link" href="{{ path('application_results', { 'id': userSubmissions.id }) }}">Visite Lab</a>
-                                {% endif %}
-                            {% endif %}
-                        </li>
-                        <li>
-                            {% if app.user  %}
-                                {% set userSubmissions = get_user_submissions() %}
-                                {% if userSubmissions and userSubmissions.isCandidateAccepted %}
-                                    <a class="nav-link" href="{{ path('app_planning') }}">Planning</a>
-                                {% endif %}
-                            {% endif %}
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/contact">Contact</a>
-                        </li>
-                    </ul>
-                    <ul class="navbar-nav">
-                        {% if app.user %}
-                            {% if app.user.isActive and app.user.currentPlace == 'profile_completed' or app.user.currentPlace == 'active' %}
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ path('app_profile', {'id': app.user.id}) }}">My Profile</a>
-                                </li>
-                            {% endif%}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ path('app_logout') }}">Logout</a>
-                            </li>
-                        {% else %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ path('app_login') }}">Login</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ path('app_registration') }}">Register</a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </div>
-            </div>
-        </nav>
+    {% if app.user %}
+        {% set role = app.user.role.name %}
+    {% else %}
+        {% set role = 'ROLE_CANDIDATE' %}
     {% endif %}
 
-        {% if app.user and app.user.role.name == 'ROLE_ADMIN' %}  
-        <nav class="container navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="{{ path('app_home') }}">FABLAB</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{{ path('app_home') }}">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('admin_candidates') }}">Candidates</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('admin_selected_candidates') }}">Selected Candidates</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_planning') }}">Planning</a>
-                        </li>
-                    </ul>
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_profile', {'id': app.user.id}) }}">My Profile</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_logout') }}">Logout</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
+    {% if role == 'ROLE_ADMIN' %}
+        {% include 'navs/nav_admin.html.twig' %}
+    {% elseif role == 'ROLE_SUPER_ADMIN' %}
+        {% include 'navs/nav_super_admin.html.twig' %}
+    {% elseif role == 'ROLE_JURY' %}
+        {% include 'navs/nav_jury.html.twig' %}
+    {% else %}
+        {% include 'navs/nav_candidate.html.twig' %}
     {% endif %}
-    
 
     <div class="container mt-5">
-        {% if app.user and not app.user.isActive %}
-            <div class="alert alert-danger alert-dismissible fade show">
-                Your account is not active. Please check your email for a validation link.
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        {% endif %}
-
-        {% if app.user and app.user.currentPlace == 'email_validated' %}
-            <div class="alert alert-danger alert-dismissible fade show">
-                <p>Please complete your profile</p>
-                <a class="btn btn-primary" href="{{ path('app_profile_completion', {'id': app.user.id}) }}">Complete Your Profile</a>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        {% endif %}
-
         {% for label, messages in app.flashes %}
             {% for message in messages %}
                 <div class="alert alert-{{ label }} alert-dismissible fade show">
@@ -165,7 +61,6 @@
                     <ul class="list-unstyled">
                         <li><a href="{{ path('app_about') }}" class="text-decoration-none text-white">About Us</a></li>
                         <li><a href="{{ path('app_contact') }}" class="text-decoration-none text-white">Contact</a></li>
-                        
                         <li><a href="{{ path('app_apply_page') }}" class="text-decoration-none text-white">Apply</a></li>
                     </ul>
                 </div>

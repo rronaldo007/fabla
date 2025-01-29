@@ -97,6 +97,25 @@ class UserProfileFixtures extends Fixture
                     'date_of_birth' => new \DateTime('1992-03-03'),
                 ]
             ],
+
+            [
+                'email' => 'jury2@example.com',
+                'password' => 'jury123',
+                'role' => $juryRole,
+                'is_active' => true,
+                'is_validated' => true,
+                'current_place' => 'active',
+                'workflow_states' => ['new', 'email_sent', 'email_validated', 'profile_completed', 'active'],
+                'email_validation_token' => Uuid::v4()->toRfc4122(),
+                'email_validation_token_expires_at' => new \DateTime('+1 day'),
+                'profile' => [
+                    'first_name' => 'Jury2',
+                    'last_name' => 'Member',
+                    'phone' => '+1234567892',
+                    'address' => '789 Jury Blvd',
+                    'date_of_birth' => new \DateTime('1992-03-03'),
+                ]
+            ],
             [
                 'email' => 'candidate@example.com',
                 'password' => 'candidate123',
