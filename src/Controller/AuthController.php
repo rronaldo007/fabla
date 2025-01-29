@@ -89,8 +89,7 @@ final class AuthController extends AbstractController
          
          $user->setIsValidated(true)
              ->setEmailValidationToken(null)
-             ->setEmailValidationTokenExpiresAt(null)
-             ->setIsActive(true);
+             ->setEmailValidationTokenExpiresAt(null);
          
          if ($workflowService->applyTransition($user, 'validate_email')) {
              $em->flush();

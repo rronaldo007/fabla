@@ -47,12 +47,15 @@ final class ProfileController extends AbstractController
         $initialState->setState($user->getCurrentPlace());
         $initialState->setUser($user);
         $em->persist($initialState);
+
      
         $profile = $user->getUserProfile() ?? new UserProfile();
      
         if (!$profile->getUser()) {
+            $user->setIsActive(true);
             $profile->setUser($user);
             $em->persist($profile);
+            $em->persist($user);
         }
      
         $form = $this->createForm(UserProfileType::class, $profile);

@@ -26,10 +26,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column]
-    private ?bool $is_active = null;
+    private ?bool $is_active = false;
 
     #[ORM\Column]
-    private ?bool $is_validated = null;
+    private ?bool $is_validated = false;
 
     #[ORM\ManyToOne(targetEntity: Role::class, inversedBy: 'users')]
     #[ORM\JoinColumn(nullable: false)]
