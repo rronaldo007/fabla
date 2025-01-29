@@ -34,9 +34,10 @@ framework:
             places:
                 - draft
                 - submitted
-                - under_review
                 - approved
                 - rejected
+                - candidate_accepted
+                - candidate_rejected
             transitions:
                 submit:
                     from: draft

@@ -63,14 +63,26 @@ final class ApplyController extends AbstractController
             return $this->redirectToRoute('app_four_o_four');
         }
 
-
-        // Check if edition is current
-        if (!$edition->isCurrent()) {
-            $this->addFlash('error', 'This edition is not currently accepting applications.');
-            return $this->redirectToRoute('app_apply_page');
-        }
-
         $userProfile = $this->getUser()->getUserProfile();
+
+        $existingSubmission = $entityManager->getRepository(Submission::class)
+        ->createQueryBuilder('s')
+        ->join('s.editions', 'e')
+        ->join('s.candidateProfile', 'cp')
+        ->join('cp.userProfile', 'up')
+        ->where('e.id = :editionId')
+        ->andWhere('up.id = :userProfileId')
+        ->setParameter('editionId', $id)
+        ->setParameter('userProfileId', $userProfile->getId())
+        ->getQuery()
+        ->getOneOrNullResult();
+
+        if ($existingSubmission) {
+            $this->addFlash('danger', 'You already have a submission for this edition.');
+            return $this->redirectToRoute('application_confirmation', [
+                'id' => $existingSubmission->getId(),
+            ]);
+        }
 
         if (!$userProfile) {
             throw $this->createNotFoundException('UserProfile not found.');
