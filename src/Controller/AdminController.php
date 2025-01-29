@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\CandidateProfile;
 use App\Entity\Submission;
 use App\Repository\SubmissionRepository;
+use App\Entity\SubmissionWorkflow;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -54,18 +56,86 @@ final class AdminController extends AbstractController
     #[Route('/admin/candidate/{id}', name: 'admin_view_candidate')]
     public function viewCandidate(int $id, SubmissionRepository $submissionRepository): Response
     {
-        $submission = $submissionRepository->find($id);
+        $query = $this->entityManager->createQuery("
+            SELECT s, c, p, u, e, sw, ws FROM App\Entity\Submission s
+            JOIN s.candidateProfile c
+            JOIN c.userProfile p
+            JOIN p.user u
+            LEFT JOIN s.editions e
+            LEFT JOIN s.submissionWorkflows sw
+            LEFT JOIN u.workflowStates ws
+            WHERE s.id = :id
+        ")->setParameter('id', $id);
+
+        $submission = $query->getSingleResult();
+
+        // dd($submission);
 
         if (!$submission) {
             throw $this->createNotFoundException('Candidate not found.');
         }
 
-        dd($submission);
-
         return $this->render('admin/candidate_profile.html.twig', [
             'submission' => $submission,
         ]);
     }
+
+    #[Route('/admin/submission/{id}/accept', name: 'admin_accept_submission')]
+    public function acceptSubmission(int $id, EntityManagerInterface $entityManager): Response
+    {
+        $submission = $entityManager->getRepository(Submission::class)->find($id);
+        
+        if (!$submission) {
+            throw $this->createNotFoundException('Submission not found.');
+        }
+
+        // Change the submission status to accepted
+        $submission->setIsSubmissionAccepted(true);
+        $submission->setCurrentState('approved');
+
+        // Log the workflow state
+        $workflow = new SubmissionWorkflow();
+        $workflow->setSubmission($submission);
+        $workflow->setState('approved');
+        $workflow->setTransltionedAt(new \DateTime());
+
+        $entityManager->persist($workflow);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Submission has been accepted.');
+
+        return $this->redirectToRoute('admin_candidates');
+    }
+
+    #[Route('/admin/submission/{id}/reject', name: 'admin_reject_submission')]
+    public function rejectSubmission(int $id, EntityManagerInterface $entityManager): Response
+    {
+        $submission = $entityManager->getRepository(Submission::class)->find($id);
+        
+        if (!$submission) {
+            throw $this->createNotFoundException('Submission not found.');
+        }
+
+        // Change the submission status to rejected
+        $submission->setIsSubmissionAccepted(false);
+        $submission->setCurrentState('rejected');
+
+        // Log the workflow state
+        $workflow = new SubmissionWorkflow();
+        $workflow->setSubmission($submission);
+        $workflow->setState('rejected');
+        $workflow->setTransltionedAt(new \DateTime());
+
+        $entityManager->persist($workflow);
+        $entityManager->flush();
+
+        $this->addFlash('danger', 'Submission has been rejected.');
+
+        return $this->redirectToRoute('admin_candidates');
+    }
+
+
+
 
 
 }
