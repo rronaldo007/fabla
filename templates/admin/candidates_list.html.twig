@@ -17,6 +17,7 @@
                 <th>Current Year</th>
                 <th>Nationality</th>
                 <th>Documents</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -84,6 +85,9 @@
                                 <i class="fas fa-id-card"></i> Student Card
                             </a>
                         {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ path('admin_view_candidate', {'id': submission.id}) }}" class="btn btn-sm btn-primary">View Candidates Profile</a>
                     </td>
                 </tr>
             {% else %}

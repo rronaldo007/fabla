@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Candidate Profile{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="mb-4">Candidate Profile</h1>
+
+    <div class="card">
+        <div class="card-body">
+            <h4>{{ submission.candidateProfile.userProfile.firstName }} {{ submission.candidateProfile.userProfile.lastName }}</h4>
+            <p><strong>Email:</strong> {{ submission.candidateProfile.userProfile.user.email }}</p>
+            <p><strong>Phone:</strong> {{ submission.candidateProfile.userProfile.phone }}</p>
+            <p><strong>Address:</strong> {{ submission.candidateProfile.userProfile.address }}</p>
+            <p><strong>Date of Birth:</strong> {{ submission.candidateProfile.userProfile.dateOfBirth|date('Y-m-d') }}</p>
+
+            <h5>Education & Background</h5>
+            <p><strong>School:</strong> {{ submission.candidateProfile.currentSchool.name }}</p>
+            <p><strong>Specialization:</strong> {{ submission.candidateProfile.specialization.name }}</p>
+            <p><strong>Program Entry Date:</strong> {{ submission.candidateProfile.programEntryDate|date('Y-m-d') }}</p>
+            <p><strong>Current Year:</strong> {{ submission.candidateProfile.currentYear|date('Y') }}</p>
+            <p><strong>Nationality:</strong> {{ submission.candidateProfile.nationality.name }}</p>
+
+            <h5>Documents</h5>
+            <ul>
+                {% if submission.candidateProfile.CV %}
+                    <li>
+                        <a href="{{ asset(submission.candidateProfile.CV) }}" class="btn btn-primary btn-sm" target="_blank">
+                            View CV (PDF)
+                        </a>
+                    </li>
+                {% endif %}
+                {% if submission.candidateProfile.studentCardPath %}
+                    <li>
+                        <a href="{{ asset(submission.candidateProfile.studentCardPath) }}" class="btn btn-secondary btn-sm" target="_blank">
+                            View Student Card
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+
+            <h5>Jury Evaluations</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Jury Member</th>
+                        <th>Score</th>
+                        <th>Comment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for score in submission.juryScores %}
+                        <tr>
+                            <td>{{ score.jury.userProfile.firstName }} {{ score.jury.userProfile.lastName }}</td>
+                            <td>{{ score.score }}/10</td>
+                            <td>{{ score.comment }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center">No scores yet</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <a href="{{ path('admin_candidates') }}" class="btn btn-outline-secondary mt-3">Back to List</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
