@@ -21,10 +21,14 @@
 <body>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> a484310 (finished superadmin dashboard)
     {% if app.user %}
         {% set role = app.user.role.name %}
     {% else %}
         {% set role = 'ROLE_CANDIDATE' %}
+<<<<<<< HEAD
 =======
     {% if app.user and app.user.role.name == 'ROLE_CANDIDATE' or not app.user %} 
         <nav class="container navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
@@ -94,6 +98,8 @@
             </div>
         </nav>
 >>>>>>> 2a8a863 (ediyion added)
+=======
+>>>>>>> a484310 (finished superadmin dashboard)
     {% endif %}
 
     {% if role == 'ROLE_ADMIN' %}
