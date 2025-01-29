@@ -51,4 +51,21 @@ final class AdminController extends AbstractController
         ]);
     }
 
+    #[Route('/admin/candidate/{id}', name: 'admin_view_candidate')]
+    public function viewCandidate(int $id, SubmissionRepository $submissionRepository): Response
+    {
+        $submission = $submissionRepository->find($id);
+
+        if (!$submission) {
+            throw $this->createNotFoundException('Candidate not found.');
+        }
+
+        dd($submission);
+
+        return $this->render('admin/candidate_profile.html.twig', [
+            'submission' => $submission,
+        ]);
+    }
+
+
 }
