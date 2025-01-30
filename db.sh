@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Check if PHP is installed
 if ! command -v php &> /dev/null; then
     echo "PHP is not installed. Please install PHP first."
@@ -8,18 +7,10 @@ fi
 
 # Create database
 echo "Creating database..."
-php bin/console doctrine:database:create --if-not-exists
+php bin/console doctrine:database:create --if-not-exists --env=prod
 
-# Create migration
-echo "Creating migration..."
-php bin/console make:migration -n
-
-# Run migration
+# Run migrations
 echo "Running migration..."
-php bin/console doctrine:migrations:migrate -n
+php bin/console doctrine:migrations:migrate --no-interaction --env=prod
 
-# Load fixtures
-echo "Loading fixtures..."
-php bin/console doctrine:fixtures:load -n
-
-echo "Database setup completed successfully!"
+echo "Production database setup completed successfully!"
