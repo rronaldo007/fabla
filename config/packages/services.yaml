@@ -7,3 +7,5 @@ services:
         arguments:
             $userRegistrationStateMachine: '@state_machine.user_registration'
             $em: '@doctrine.orm.entity_manager'
+            $mailer: '@mailer'
+            $logger: '@logger'
