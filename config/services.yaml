@@ -1,14 +1,15 @@
 # This file is the entry point to configure your own services.
 # Files in the packages/ subdirectory configure your dependencies.
 
-# Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     upload_directory: '%kernel.project_dir%/public/candidate_uploads'
     target_directory: '%kernel.project_dir%/public/uploads'
     cv_directory: '%kernel.project_dir%/public/uploads/cvs'
     video_directory: '%kernel.project_dir%/public/uploads/videos'
     upload_studencard: '%kernel.project_dir%/public/uploads/studencard'
+    mailer_from_address: 'rukundoronaldo4@gmail.com'
+    mailer_from_name: 'Fabla'
+
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -27,8 +28,19 @@ services:
     # Explicit configuration for services that require special arguments
     App\Service\SubmissionWorkflowService:
         arguments:
-            $submissionStateMachine: '@state_machine.submission_workflow' # Explicitly inject the submission workflow
-    
+            $submissionStateMachine: '@state_machine.submission_workflow'
+
+    App\Service\UserWorkflowService:
+        arguments:
+            $mailer: '@mailer'
+            $em: '@doctrine.orm.entity_manager'
+            $logger: '@logger'
+        tags:
+            - { name: 'kernel.event_subscriber' }
+
     App\Repository\SubmissionRepository:
         arguments:
             $registry: '@doctrine'
+
+    App\Service\EmailService:
+        arguments:

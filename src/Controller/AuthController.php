@@ -27,12 +27,12 @@ final class AuthController extends AbstractController
     ): Response {
         $form = $this->createForm(UserType::class, new User());
         $form->handleRequest($request);
-     
+    
         if ($form->isSubmitted() && $form->isValid()) {
             $email = $form->get('email')->getData();
             
             if ($em->getRepository(User::class)->findOneBy(['email' => $email])) {
-                $this->addFlash('danger', 'le mail est déjà utilisé.');
+                $this->addFlash('danger', 'Le mail est déjà utilisé.');
                 return $this->render('auth/user_registration.html.twig', [
                     'form' => $form->createView(),
                 ]);
@@ -46,21 +46,18 @@ final class AuthController extends AbstractController
                 ->setEmailValidationToken(bin2hex(random_bytes(32)))
                 ->setEmailValidationTokenExpiresAt(new \DateTime('+24 hours'));
     
-            $workflowState = new WorkflowState();
-            $workflowState->setState('new');
-            $workflowState->setUser($user);
-            
             $em->persist($user);
-            $em->persist($workflowState);
     
+            // Apply the workflow transition which will trigger the onSendEmail() event.
             $workflowService->applyTransition($user, 'send_email');
     
+            // Flush all changes (user and workflow state)
             $em->flush();
+    
             $this->addFlash('success', 'Votre compte a été créé avec succès. Un email de confirmation vous a été envoyé.');
-     
             return $this->redirectToRoute('app_login', ['id' => $user->getId()]);
         }
-     
+    
         return $this->render('auth/user_registration.html.twig', [
             'form' => $form->createView(),
         ]);
