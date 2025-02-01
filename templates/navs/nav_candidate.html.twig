@@ -14,13 +14,9 @@
             </ul>
             <ul class="navbar-nav">
                 {% if app.user %}
-<<<<<<< HEAD
                     {% if app.user and app.user.isActive %}
                     <li class="nav-item"><a class="nav-link" href="{{ path('app_profile', {'id': app.user.id}) }}">My Profile</a></li>
                     {% endif %}
-=======
-                    <li class="nav-item"><a class="nav-link" href="{{ path('app_profile', {'id': app.user.id}) }}">My Profile</a></li>
->>>>>>> a484310 (finished superadmin dashboard)
                     <li class="nav-item"><a class="nav-link" href="{{ path('app_logout') }}">Logout</a></li>
                 {% else %}
                     <li class="nav-item"><a class="nav-link" href="{{ path('app_login') }}">Login</a></li>
