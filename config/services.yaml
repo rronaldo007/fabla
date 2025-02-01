@@ -9,6 +9,7 @@ parameters:
     upload_studencard: '%kernel.project_dir%/public/uploads/studencard'
     mailer_from_address: 'rukundoronaldo4@gmail.com'
     mailer_from_name: 'Fabla'
+    base_url: '%env(BASE_URL)%'
 
 services:
     # default configuration for services in *this* file
@@ -32,9 +33,11 @@ services:
 
     App\Service\UserWorkflowService:
         arguments:
-            $mailer: '@mailer'
+            $userRegistrationStateMachine: '@state_machine.user_registration'
             $em: '@doctrine.orm.entity_manager'
+            $mailer: '@mailer'
             $logger: '@logger'
+            $baseUrl: '%base_url%'
         tags:
             - { name: 'kernel.event_subscriber' }
 

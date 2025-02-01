@@ -9,3 +9,7 @@ app_404:
     controller: App\Controller\FourOFourController::index
     requirements:
         any: .*
+
+validate_email:
+    path: /validate-email/{token}
+    controller: App\Controller\AuthController::validateEmail

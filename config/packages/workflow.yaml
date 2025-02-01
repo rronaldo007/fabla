@@ -3,8 +3,8 @@ framework:
         user_registration:
             type: 'state_machine'
             marking_store:
-                type: 'method' # Use method-based marking store
-                property: 'currentPlace' # Tell it to use `currentPlace` instead of `state`
+                type: 'method'
+                property: 'currentPlace'
             supports:
                 - App\Entity\User
             initial_marking: 'new'
@@ -23,6 +23,7 @@ framework:
                 complete_profile:
                     from: email_validated
                     to: profile_completed
+
         submission_workflow:
             type: 'state_machine'
             marking_store:

@@ -19,19 +19,21 @@ class UserWorkflowService implements EventSubscriberInterface
     private EntityManagerInterface $em;
     private MailerInterface $mailer;
     private LoggerInterface $logger;
+    private string $baseUrl;
 
     public function __construct(
         WorkflowInterface $userRegistrationStateMachine,
         EntityManagerInterface $em,
         MailerInterface $mailer,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        string $baseUrl // This should receive the '%base_url%' parameter
     ) {
         $this->workflow = $userRegistrationStateMachine;
         $this->em = $em;
         $this->mailer = $mailer;
         $this->logger = $logger;
+        $this->baseUrl = $baseUrl;
     }
-
     /**
      * Applies a workflow transition to the user.
      *
@@ -116,7 +118,7 @@ class UserWorkflowService implements EventSubscriberInterface
                 ->subject('Confirm Your Registration')
                 ->html(
                     '<p>Please confirm your email by clicking the link below:</p>' .
-                    '<a href="https://localhost:8000/validate-email/' . $user->getEmailValidationToken() . '">Confirm Email</a>'
+                    '<a href="' . $this->baseUrl . 'validate-email/' . $user->getEmailValidationToken() . '">Confirm Email</a>'
                 );
 
             $this->mailer->send($email);
