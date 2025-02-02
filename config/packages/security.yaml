@@ -19,6 +19,7 @@ security:
 
         main:
             lazy: true
+            stateless: false
             provider: app_user_provider
             form_login:
                 login_path: app_login
@@ -34,16 +35,17 @@ security:
                 target: app_login
 
     access_control:
-        # Publicly accessible routes
-        - { path: ^/login, roles: PUBLIC_ACCESS }
-        - { path: ^/registration, roles: PUBLIC_ACCESS }
-        - { path: ^/home, roles: PUBLIC_ACCESS }
-        - { path: ^/candidate, roles: PUBLIC_ACCESS }
 
+        # Allow anonymous access to login, registration, and home
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/logout, roles: PUBLIC_ACCESS }
+        - { path: ^/registration, roles: PUBLIC_ACCESS }
+        - { path: ^/$, roles: PUBLIC_ACCESS }
 
         # Role-specific access
-        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/admin, roles: [ROLE_ADMIN, ROLE_JURY] }
         - { path: ^/super-admin, roles: ROLE_SUPER_ADMIN }
+        - { path: ^/jury, roles: ROLE_JURY }
         - { path: ^/jury, roles: ROLE_JURY }
 
         # For app_apply_page
@@ -55,3 +57,5 @@ security:
         - { path: ^/profile, roles:  [ROLE_ADMIN, ROLE_JURY, ROLE_CANDIDATE] }
         - { path: ^/planning, roles:  [ROLE_ADMIN, ROLE_JURY, ROLE_CANDIDATE] }
         - { path: ^/apply/apply/confirmation, roles:  [ROLE_CANDIDATE] }
+        - { path: ^/apply/finish, roles:  [ROLE_CANDIDATE] }
+        - { path: ^/apply/confirmation, roles:  [ROLE_CANDIDATE] }

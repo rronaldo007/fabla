@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\UserType;
+use App\Form\ResetPasswordType;
+use App\Form\ForgotPasswordType;
 use App\Entity\Role;
 use App\Entity\WorkflowState;
 use App\Service\UserWorkflowService;
@@ -125,6 +127,121 @@ final class AuthController extends AbstractController
     public function logout(): void
     {
         throw new \LogicException('This method should not be called directly.');
+    }
+
+    #[Route('/forgot-password', name: 'app_forgot_password')]
+    public function forgotPassword(Request $request, EntityManagerInterface $em, \Symfony\Component\Mailer\MailerInterface $mailer): Response
+    {
+        $form = $this->createForm(ForgotPasswordType::class);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $email = $form->get('email')->getData();
+            $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
+
+            if ($user) {
+                $resetToken = bin2hex(random_bytes(32));
+                $user->setResetPasswordToken($resetToken);
+                $user->setResetPasswordTokenExpiresAt(new \DateTime('+1 hour'));
+
+                $em->flush();
+
+                // Send Email with Reset Link
+                $email = (new \Symfony\Component\Mime\Email())
+                    ->from('no-reply@fablab.com')
+                    ->to($user->getEmail())
+                    ->subject('Password Reset Request')
+                    ->html('<p>Click <a href="http://localhost:8000/reset-password/' . $resetToken . '">here</a> to reset your password.</p>');
+
+                $mailer->send($email);
+
+                $this->addFlash('success', 'Password reset link has been sent to your email.');
+            } else {
+                $this->addFlash('danger', 'No account found with this email.');
+            }
+
+            return $this->redirectToRoute('app_forgot_password');
+        }
+
+        return $this->render('auth/forgot_password.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/reset-password/{token}', name: 'app_reset_password')]
+    public function resetPassword(string $token, Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher): Response
+    {
+        $user = $em->getRepository(User::class)->findOneBy(['resetPasswordToken' => $token]);
+
+        if (!$user || $user->getResetPasswordTokenExpiresAt() < new \DateTime()) {
+            $this->addFlash('danger', 'Invalid or expired reset token.');
+            return $this->redirectToRoute('app_forgot_password');
+        }
+
+        $form = $this->createForm(ResetPasswordType::class);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $newPassword = $form->get('new_password')->getData();
+            $confirmPassword = $form->get('confirm_password')->getData();
+
+            if ($newPassword !== $confirmPassword) {
+                $this->addFlash('danger', 'Passwords do not match.');
+                return $this->redirectToRoute('app_reset_password', ['token' => $token]);
+            }
+
+            $hashedPassword = $passwordHasher->hashPassword($user, $newPassword);
+            $user->setPassword($hashedPassword);
+            $user->setResetPasswordToken(null);
+            $user->setResetPasswordTokenExpiresAt(null);
+
+            $em->flush();
+
+            $this->addFlash('success', 'Your password has been reset successfully.');
+            return $this->redirectToRoute('app_login');
+        }
+
+        return $this->render('auth/reset_password.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/change-password', name: 'app_change_password')]
+    public function changePassword(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher): Response
+    {
+        $user = $this->getUser();
+        
+        if (!$user) {
+            $this->addFlash('danger', 'You must be logged in to change your password.');
+            return $this->redirectToRoute('app_login');
+        }
+
+        if ($request->isMethod('POST')) {
+            $oldPassword = $request->request->get('old_password');
+            $newPassword = $request->request->get('new_password');
+            $confirmPassword = $request->request->get('confirm_password');
+
+            // Verify old password
+            if (!$passwordHasher->isPasswordValid($user, $oldPassword)) {
+                $this->addFlash('danger', 'Incorrect current password.');
+                return $this->redirectToRoute('app_change_password');
+            }
+
+            // Check if new passwords match
+            if ($newPassword !== $confirmPassword) {
+                $this->addFlash('danger', 'New passwords do not match.');
+                return $this->redirectToRoute('app_change_password');
+            }
+
+            // Set new password
+            $user->setPassword($passwordHasher->hashPassword($user, $newPassword));
+            $em->flush();
+
+            $this->addFlash('success', 'Your password has been successfully changed.');
+            return $this->redirectToRoute('app_home');
+        }
+
+        return $this->render('auth/change_password.html.twig');
     }
 
 }

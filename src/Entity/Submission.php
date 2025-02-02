@@ -49,10 +49,20 @@ class Submission
     #[ORM\JoinTable(name: 'submission_edition')]
     private Collection $editions;
 
+    /**
+     * @var Collection<int, Evaluation>
+     */
+    #[ORM\OneToMany(mappedBy: 'submission', targetEntity: Evaluation::class, cascade: ['persist', 'remove'])]
+    private Collection $evaluations;
+
+
+
     public function __construct()
     {
         $this->submissionWorkflows = new ArrayCollection();
         $this->editions = new ArrayCollection();
+        $this->evaluations = new ArrayCollection();
+
     }
 
     public function getId(): ?int
@@ -183,6 +193,35 @@ class Submission
     {
         if ($this->editions->removeElement($edition)) {
             $edition->removeSubmission($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Evaluation>
+     */
+    public function getEvaluations(): Collection
+    {
+        return $this->evaluations;
+    }
+
+    public function addEvaluation(Evaluation $evaluation): static
+    {
+        if (!$this->evaluations->contains($evaluation)) {
+            $this->evaluations->add($evaluation);
+            $evaluation->setSubmission($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvaluation(Evaluation $evaluation): static
+    {
+        if ($this->evaluations->removeElement($evaluation)) {
+            if ($evaluation->getSubmission() === $this) {
+                $evaluation->setSubmission(null);
+            }
         }
 
         return $this;

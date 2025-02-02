@@ -194,6 +194,4 @@ class AdministratorController extends AbstractController
         $this->addFlash('success', 'Administrator has been restored.');
         return $this->redirectToRoute('super_admin_list_admins');
     }
-
-
 }

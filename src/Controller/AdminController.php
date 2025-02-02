@@ -11,14 +11,18 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\UserRepository;
+
 
 final class AdminController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
+    private UserRepository $userRepository;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository)
     {
         $this->entityManager = $entityManager;
+        $this->userRepository = $userRepository;
     }
     #[Route('/admin', name: 'app_admin')]
     public function index(): Response
@@ -80,62 +84,87 @@ final class AdminController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/submission/{id}/accept', name: 'admin_accept_submission')]
-    public function acceptSubmission(int $id, EntityManagerInterface $entityManager): Response
+    #[Route('/admin/candidate/{id}/accept', name: 'admin_accept_candidate')]
+    public function acceptCandidate(int $id, EntityManagerInterface $entityManager, UserRepository $userRepository): Response
     {
         $submission = $entityManager->getRepository(Submission::class)->find($id);
-        
+
         if (!$submission) {
-            throw $this->createNotFoundException('Submission not found.');
+            throw $this->createNotFoundException('Candidate submission not found.');
         }
 
-        // Change the submission status to accepted
-        $submission->setIsSubmissionAccepted(true);
-        $submission->setCurrentState('approved');
+        // Check if all jury members have evaluated
+        $juryMembers = $userRepository->findByRole('ROLE_JURY');
+        $totalJuryCount = count($juryMembers);
+        $evaluatedJuryCount = count($submission->getEvaluations());
+
+        if ($evaluatedJuryCount != $totalJuryCount) {
+            $this->addFlash('warning', 'All jury members must evaluate before making a decision.');
+            return $this->redirectToRoute('admin_view_candidate', ['id' => $id]);
+        }
+
+        // Prevent re-accepting an already accepted candidate
+        if ($submission->isCandidateAccepted()) {
+            $this->addFlash('warning', 'This candidate has already been accepted.');
+            return $this->redirectToRoute('admin_view_candidate', ['id' => $id]);
+        }
+
+        // Accept the candidate
+        $submission->setIsCandidateAccepted(true);
+        $submission->setCurrentState('candidate_approved');
 
         // Log the workflow state
         $workflow = new SubmissionWorkflow();
         $workflow->setSubmission($submission);
-        $workflow->setState('approved');
+        $workflow->setState('candidate_approved');
         $workflow->setTransltionedAt(new \DateTime());
 
         $entityManager->persist($workflow);
         $entityManager->flush();
 
-        $this->addFlash('success', 'Submission has been accepted.');
-
-        return $this->redirectToRoute('admin_candidates');
+        $this->addFlash('success', 'Candidate has been successfully accepted.');
+        return $this->redirectToRoute('admin_view_candidate', ['id' => $id]);
     }
 
-    #[Route('/admin/submission/{id}/reject', name: 'admin_reject_submission')]
-    public function rejectSubmission(int $id, EntityManagerInterface $entityManager): Response
+    #[Route('/admin/candidate/{id}/reject', name: 'admin_reject_candidate')]
+    public function rejectCandidate(int $id, EntityManagerInterface $entityManager, UserRepository $userRepository): Response
     {
         $submission = $entityManager->getRepository(Submission::class)->find($id);
-        
+
         if (!$submission) {
-            throw $this->createNotFoundException('Submission not found.');
+            throw $this->createNotFoundException('Candidate submission not found.');
         }
 
-        // Change the submission status to rejected
-        $submission->setIsSubmissionAccepted(false);
-        $submission->setCurrentState('rejected');
+        // Check if all jury members have evaluated
+        $juryMembers = $userRepository->findByRole('ROLE_JURY');
+        $totalJuryCount = count($juryMembers);
+        $evaluatedJuryCount = count($submission->getEvaluations());
+
+        if ($evaluatedJuryCount < $totalJuryCount) {
+            $this->addFlash('warning', 'All jury members must evaluate before making a decision.');
+            return $this->redirectToRoute('admin_view_candidate', ['id' => $id]);
+        }
+
+        // Prevent re-rejecting an already rejected candidate
+        if (!$submission->isCandidateAccepted()) {
+            $this->addFlash('warning', 'This candidate has already been rejected.');
+            return $this->redirectToRoute('admin_view_candidate', ['id' => $id]);
+        }
+
+        // Reject the candidate
+        $submission->setIsCandidateAccepted(false);
+        $submission->setCurrentState('candidate_rejected');
 
         // Log the workflow state
         $workflow = new SubmissionWorkflow();
         $workflow->setSubmission($submission);
-        $workflow->setState('rejected');
+        $workflow->setState('candidate_rejected');
         $workflow->setTransltionedAt(new \DateTime());
 
         $entityManager->persist($workflow);
         $entityManager->flush();
 
-        $this->addFlash('danger', 'Submission has been rejected.');
-
-        return $this->redirectToRoute('admin_candidates');
+        $this->addFlash('danger', 'Candidate has been rejected.');
+        return $this->redirectToRoute('admin_view_candidate', ['id' => $id]);
     }
-
-
-
-
-
 }

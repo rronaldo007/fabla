@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Évaluation - FABLAB{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <form method="post" action="{{ path('jury_noter_submission', { id: submission.id }) }}" class="col-md-8 mx-auto p-5 border rounded shadow bg-white">
+
+        <h1 class="h3 mb-4 fw-bold text-center text-primary">Évaluation de la soumission</h1>
+        <p class="text-center text-muted mb-4">Attribuez une note et laissez un commentaire sur ce projet.</p>
+
+        <!-- Projet de Recherche -->
+        <div class="mb-4 p-4 border rounded bg-light shadow-sm">
+            <h4 class="text-primary mb-2"><i class="fas fa-book me-2"></i>Projet de Recherche</h4>
+            <p class="fw-bold text-dark">{{ submission.subject.name }}</p>
+            <p class="text-muted">{{ submission.subject.description }}</p>
+        </div>
+
+        <!-- CV du Candidat -->
+        <div class="mb-4 p-4 border rounded bg-light shadow-sm">
+            <h4 class="text-primary mb-2"><i class="fas fa-file-pdf me-2"></i>CV du Candidat</h4>
+            {% if submission.candidateProfile.cv %}
+                <a href="{{ asset(submission.candidateProfile.cv) }}" class="btn btn-outline-primary w-100" target="_blank">
+                    Télécharger le CV
+                </a>
+            {% else %}
+                <p class="text-muted">Aucun CV disponible.</p>
+            {% endif %}
+        </div>
+
+        <!-- Vidéo de Présentation -->
+        <div class="mb-4 p-4 border rounded bg-light shadow-sm text-center">
+            <h4 class="text-primary mb-2"><i class="fas fa-video me-2"></i>Vidéo de présentation</h4>
+            {% if submission.subject.videoPresantation %}
+                <video width="100%" height="315" class="rounded" controls>
+                    <source src="{{ asset(submission.subject.videoPresantation) }}" type="video/mp4">
+                    Votre navigateur ne supporte pas la lecture de cette vidéo.
+                </video>
+            {% else %}
+                <p class="text-muted">Aucune vidéo disponible.</p>
+            {% endif %}
+        </div>
+
+        <hr class="my-4">
+
+        <!-- Formulaire de notation -->
+        {{ form_start(form) }}
+
+        <div class="mb-4">
+            <label for="note" class="form-label"><i class="fas fa-star me-2"></i>Note (1-10)</label>
+            {{ form_widget(form.note, { 'attr': {'class': 'form-control shadow-sm', 'min': 1, 'max': 10} }) }}
+            {{ form_errors(form.note) }}
+        </div>
+
+        <div class="mb-4">
+            <label for="comment" class="form-label"><i class="fas fa-comment me-2"></i>Commentaire</label>
+            {{ form_widget(form.comment, { 'attr': {'class': 'form-control shadow-sm', 'rows': 4, 'placeholder': 'Donnez votre avis sur ce projet...'} }) }}
+            {{ form_errors(form.comment) }}
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2 shadow">Soumettre l'évaluation</button>
+
+        {{ form_end(form) }}
+
+        <div class="text-center mt-3">
+            <a href="{{ path('admin_view_candidate', { id: submission.id }) }}" class="text-decoration-none text-primary"><i class="fas fa-arrow-left me-2"></i>Retour à la liste des soumissions</a>
+        </div>
+
+    </form>
+</div>
+{% endblock %}

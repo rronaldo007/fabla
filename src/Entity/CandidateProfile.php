@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CandidateProfileRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\UX\Turbo\Attribute\Broadcast;
@@ -43,6 +45,17 @@ class CandidateProfile
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $CV = null;
+
+    /**
+     * @var Collection<int, Evaluation>
+     */
+    #[ORM\OneToMany(targetEntity: Evaluation::class, mappedBy: 'candidat')]
+    private Collection $note;
+
+    public function __construct()
+    {
+        $this->note = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -141,6 +154,36 @@ class CandidateProfile
     public function setCV(?string $CV): static
     {
         $this->CV = $CV;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Evaluation>
+     */
+    public function getNote(): Collection
+    {
+        return $this->note;
+    }
+
+    public function addNote(Evaluation $note): static
+    {
+        if (!$this->note->contains($note)) {
+            $this->note->add($note);
+            $note->setCandidat($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNote(Evaluation $note): static
+    {
+        if ($this->note->removeElement($note)) {
+            // set the owning side to null (unless already changed)
+            if ($note->getCandidat() === $this) {
+                $note->setCandidat(null);
+            }
+        }
 
         return $this;
     }

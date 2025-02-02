@@ -17,7 +17,10 @@
                     <li class="list-group-item"><strong>Address:</strong> {{ app.user.userProfile.address ?: 'Not Provided' }}</li>
                     <li class="list-group-item"><strong>Date of Birth:</strong> {{ app.user.userProfile.dateOfBirth ? app.user.userProfile.dateOfBirth|date('d/m/Y') : 'Not Provided' }}</li>
                 </ul>
-                <a href="" class="btn btn-primary mt-3">Edit Profile</a>
+                <div class="d-flex">
+                    <a href="" class="btn btn-primary mt-3">Edit Profile</a>
+                    <a href="{{ path('app_change_password') }}" class="btn btn-primary mt-3">Reset Password</a>
+                </div>
             </div>
         </div>
 

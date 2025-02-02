@@ -73,7 +73,7 @@
                         {% endif %}
                     </td>
 
-                    <td>
+                    <td class="d-flex">
                         {% if submission.candidateProfile.CV %}
                             <a href="{{ asset(submission.candidateProfile.CV) }}" class="btn btn-sm btn-primary me-2" target="_blank">
                                 <i class="fas fa-file-pdf"></i> CV
@@ -82,7 +82,7 @@
 
                         {% if submission.candidateProfile.studentCardPath %}
                             <a href="{{ asset(submission.candidateProfile.studentCardPath) }}" class="btn btn-sm btn-secondary" target="_blank">
-                                <i class="fas fa-id-card"></i> Student Card
+                                <i class="fas fa-id-card"></i> Card
                             </a>
                         {% endif %}
                     </td>

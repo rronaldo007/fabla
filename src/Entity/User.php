@@ -53,7 +53,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->workflowStates = new ArrayCollection();
+        $this->evaluations = new ArrayCollection();
     }
+
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    private ?string $resetPasswordToken = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $resetPasswordTokenExpiresAt = null;
 
     public function getId(): ?int
     {
@@ -85,6 +92,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     private string $currentState;
+
+    /**
+     * @var Collection<int, Evaluation>
+     */
+    #[ORM\OneToMany(targetEntity: Evaluation::class, mappedBy: 'Jury')]
+    private Collection $evaluations;
 
     public function isActive(): ?bool
     {
@@ -224,6 +237,63 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->currentState = $state;
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Evaluation>
+     */
+    public function getEvaluations(): Collection
+    {
+        return $this->evaluations;
+    }
+
+    public function addEvaluation(Evaluation $evaluation): static
+    {
+        if (!$this->evaluations->contains($evaluation)) {
+            $this->evaluations->add($evaluation);
+            $evaluation->setJury($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvaluation(Evaluation $evaluation): static
+    {
+        if ($this->evaluations->removeElement($evaluation)) {
+            // set the owning side to null (unless already changed)
+            if ($evaluation->getJury() === $this) {
+                $evaluation->setJury(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getResetPasswordToken(): ?string
+    {
+        return $this->resetPasswordToken;
+    }
+
+    public function setResetPasswordToken(?string $token): static
+    {
+        $this->resetPasswordToken = $token;
+        return $this;
+    }
+
+    public function getResetPasswordTokenExpiresAt(): ?\DateTimeInterface
+    {
+        return $this->resetPasswordTokenExpiresAt;
+    }
+
+    public function setResetPasswordTokenExpiresAt(?\DateTimeInterface $expiresAt): static
+    {
+        $this->resetPasswordTokenExpiresAt = $expiresAt;
+        return $this;
+    }
+
+    public function isResetPasswordTokenValid(): bool
+    {
+        return $this->resetPasswordTokenExpiresAt && new \DateTime() < $this->resetPasswordTokenExpiresAt;
     }
 }
 
