@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\CandidateProfile;
+use App\Entity\SubmissionWorkflow;
 use App\Entity\Submission;
 use App\Repository\SubmissionRepository;
 use App\Service\EmailService;
