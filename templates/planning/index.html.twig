@@ -44,9 +44,9 @@
                 {% for reservation in reservations %}
                     <tr>
                         <td>{{ reservation.resource.name }}</td>
-                        <td>{{ reservation.startTime|date('Y-m-d') }}</td>
+                        <td>{{ reservation.startTime|slice(0, 10) }}</td>
                         <td>
-                            {% if reservation.startTime|date('H:i') == '08:00' %}
+                            {% if reservation.startTime|slice(11, 5) == '08:00' %}
                                 Morning (08:00 - 12:00)
                             {% else %}
                                 Afternoon (13:00 - 17:00)
@@ -64,12 +64,12 @@
                                     <i class="bi bi-trash"></i> Delete
                                 </a>
                                 <a href="{{ path('app_reservation_exchange', {'id': reservation.id}) }}" 
-                                   class="btn btn-sm btn-info"
-                                   onclick="return confirm('Are you sure you want to exchange this reservation?')">
-                                    <i class="bi bi-arrow-left-right"></i> Exchange
+                                   class="btn btn-sm btn-warning"
+                                   onclick="return confirm('Are you sure you want to delete this reservation?')">
+                                    <i class="bi bi-trash"></i> Exchnage
                                 </a>
                             {% else %}
-                                <span class="text-muted">N/A</span>
+                                N/A
                             {% endif %}
                         </td>
                     </tr>
@@ -88,42 +88,29 @@
 </div>
 {% endblock %}
 
+
 {% block javascripts %}
     {{ parent() }}
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log("DOM fully loaded, initializing calendar...");
-            
+        let calendar = null;
+
+        function initializeCalendar() {
+            // Clean up existing calendar if it exists
+            if (calendar) {
+                calendar.destroy();
+                calendar = null;
+            }
+
             const calendarEl = document.getElementById('calendar');
             if (!calendarEl) {
                 console.error("Calendar element not found!");
                 return;
             }
 
-            async function fetchCalendarEvents() {
-                try {
-                    const response = await fetch('{{ path('app_calendar_events') }}');
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch events');
-                    }
-                    return await response.json();
-                } catch (error) {
-                    console.error('Error fetching calendar events:', error);
-                    return [];
-                }
-            }
-
-            let events = [];
-            try {
-                events = {{ calendarEvents|raw }};
-            } catch (error) {
-                console.error("Error parsing initial events:", error);
-            }
-
-            let calendar = new FullCalendar.Calendar(calendarEl, {
+            calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'timeGridWeek',
-                height: 'auto',
+                height: 650,
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
@@ -133,28 +120,55 @@
                 slotMaxTime: '18:00:00',
                 allDaySlot: false,
                 slotDuration: '01:00:00',
-                events: events,
+                events: [
+                    {
+                        title: 'Test Event 1',
+                        start: '2023-10-10T08:00:00',
+                        end: '2023-10-10T12:00:00'
+                    },
+                    {
+                        title: 'Test Event 2',
+                        start: '2023-10-10T13:00:00',
+                        end: '2023-10-10T17:00:00'
+                    }
+                ],
                 eventDidMount: function(info) {
                     info.el.title = info.event.title;
                 },
                 eventClick: function(info) {
                     console.log('Event clicked:', info.event);
-                },
-                datesSet: async function() {
-                    const newEvents = await fetchCalendarEvents();
-                    calendar.removeAllEvents();
-                    calendar.addEventSource(newEvents);
                 }
             });
 
             calendar.render();
-            console.log("Calendar initialized successfully");
+            console.log('Calendar initialized');
+        }
 
-            setInterval(async () => {
-                const newEvents = await fetchCalendarEvents();
-                calendar.removeAllEvents();
-                calendar.addEventSource(newEvents);
-            }, 30000); // Refresh every 30 seconds
+        // Initialize on first load
+        document.addEventListener('DOMContentLoaded', initializeCalendar);
+
+        // Handle page reloads and navigation
+        document.addEventListener('turbo:load', initializeCalendar);
+        document.addEventListener('turbo:render', initializeCalendar);
+
+        // Clean up when leaving the page
+        document.addEventListener('turbo:before-cache', function() {
+            if (calendar) {
+                calendar.destroy();
+                calendar = null;
+            }
+        });
+
+        // Fallback for regular page loads
+        if (document.readyState === 'complete') {
+            initializeCalendar();
+        }
+
+        // Force reload on visibility change
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                window.location.reload();
+            }
         });
     </script>
 {% endblock %}
