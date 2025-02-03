@@ -102,10 +102,14 @@ final class AdminController extends AbstractController
         $totalJuryCount = count($juryMembers);
         $juryEvaluations = array_filter(
             $submission->getEvaluations()->toArray(),
-            function($evaluation) {
-                // Make sure the evaluation has a jury assigned to avoid potential null errors.
+            function ($evaluation) {
                 $jury = $evaluation->getJury();
-                return $jury !== null && in_array('ROLE_JURY', $jury->getRoles());
+        
+                // Ensure jury is not null, has the correct role, is active, and is not archived
+                return $jury !== null 
+                    && in_array('ROLE_JURY', $jury->getRoles()) 
+                    && $jury->isActive() // Check if the user is active
+                    && (!$jury->getUserProfile() || !$jury->getUserProfile()->isArchived()); // Ensure not archived
             }
         );
         // dd($juryEvaluations, $totalJuryCount);
@@ -153,10 +157,14 @@ final class AdminController extends AbstractController
         $totalJuryCount = count($juryMembers);
         $juryEvaluations = array_filter(
             $submission->getEvaluations()->toArray(),
-            function($evaluation) {
-                // Make sure the evaluation has a jury assigned to avoid potential null errors.
+            function ($evaluation) {
                 $jury = $evaluation->getJury();
-                return $jury !== null && in_array('ROLE_JURY', $jury->getRoles());
+        
+                // Ensure jury is not null, has the correct role, is active, and is not archived
+                return $jury !== null 
+                    && in_array('ROLE_JURY', $jury->getRoles()) 
+                    && $jury->isActive() // Check if the user is active
+                    && (!$jury->getUserProfile() || !$jury->getUserProfile()->isArchived()); // Ensure not archived
             }
         );
         // dd($juryEvaluations, $totalJuryCount);
