@@ -9,6 +9,7 @@ use App\Form\ForgotPasswordType;
 use App\Entity\Role;
 use App\Entity\WorkflowState;
 use App\Service\UserWorkflowService;
+use App\Service\EmailService;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -69,7 +70,8 @@ final class AuthController extends AbstractController
      public function validateEmail(
          string $token,
          EntityManagerInterface $em,
-         UserWorkflowService $workflowService
+         UserWorkflowService $workflowService,
+         EmailService $emailService
      ): Response {
          $user = $em->getRepository(User::class)->findOneBy(['emailValidationToken' => $token]);
          
@@ -92,6 +94,7 @@ final class AuthController extends AbstractController
          
          if ($workflowService->applyTransition($user, 'validate_email')) {
              $em->flush();
+             $emailService->sendEmailValidationSuccessNotification($user);
              return $this->redirectToRoute('app_login');
          }
          

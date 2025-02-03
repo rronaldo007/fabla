@@ -15,6 +15,7 @@ use App\Entity\SharedResource;
 use App\Repository\EditionRepository;
 use App\Entity\Edition;
 use App\Entity\User;
+use App\Service\EmailService;
 
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,11 +30,13 @@ final class ApplyController extends AbstractController
     private $entityManager;
     private $submissionRepository;
     private $slugger;
+    private $emailService;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         SubmissionRepository $submissionRepository,
-        SluggerInterface $slugger
+        SluggerInterface $slugger,
+        EmailService $emailService
     ) {
         $this->entityManager = $entityManager;
         $this->submissionRepository = $submissionRepository;
@@ -103,19 +106,6 @@ final class ApplyController extends AbstractController
             $candidateProfile->setUserProfile($userProfile);
             $isNewCandidateProfile = true;
         }
-
-        // Check for existing submission in this edition
-        // $existingSubmission = $entityManager->getRepository(Submission::class)
-        //     ->findOneBy([
-        //         'candidateProfile' => $candidateProfile,
-        //         'editions' => $edition
-        //     ]);
-
-        // if ($existingSubmission) {
-        //     return $this->redirectToRoute('application_confirmation', [
-        //         'id' => $existingSubmission->getId(),
-        //     ]);
-        // }
 
         $form = $this->createForm(CandidateProfileType::class, $candidateProfile);
         $form->handleRequest($request);

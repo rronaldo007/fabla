@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\CandidateProfile;
 use App\Entity\Submission;
 use App\Repository\SubmissionRepository;
-use App\Entity\SubmissionWorkflow;
+use App\Service\EmailService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,10 +19,15 @@ final class AdminController extends AbstractController
     private EntityManagerInterface $entityManager;
     private UserRepository $userRepository;
 
-    public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository)
+    private EmailService $emailService;
+
+
+
+    public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository, EmailService $emailService)
     {
         $this->entityManager = $entityManager;
         $this->userRepository = $userRepository;
+        $this->emailService = $emailService;
     }
     #[Route('/admin', name: 'app_admin')]
     public function index(): Response
@@ -71,12 +76,11 @@ final class AdminController extends AbstractController
             WHERE s.id = :id
         ")->setParameter('id', $id);
 
-        $submission = $query->getSingleResult();
-
-        // dd($submission);
+        $submission = $query->getOneOrNullResult();
 
         if (!$submission) {
-            throw $this->createNotFoundException('Candidate not found.');
+            $this->addFlash('danger', 'Candidate not found.');
+            return $this->redirectToRoute('admin_candidates'); // Redirect to the candidate list or another relevant page
         }
 
         return $this->render('admin/candidate_profile.html.twig', [
@@ -94,9 +98,18 @@ final class AdminController extends AbstractController
         }
 
         // Check if all jury members have evaluated
-        $juryMembers = $userRepository->findByRole('ROLE_JURY');
+        $juryMembers = $userRepository->findByRoleName('ROLE_JURY');
         $totalJuryCount = count($juryMembers);
-        $evaluatedJuryCount = count($submission->getEvaluations());
+        $juryEvaluations = array_filter(
+            $submission->getEvaluations()->toArray(),
+            function($evaluation) {
+                // Make sure the evaluation has a jury assigned to avoid potential null errors.
+                $jury = $evaluation->getJury();
+                return $jury !== null && in_array('ROLE_JURY', $jury->getRoles());
+            }
+        );
+        // dd($juryEvaluations, $totalJuryCount);
+        $evaluatedJuryCount = count($juryEvaluations);
 
         if ($evaluatedJuryCount != $totalJuryCount) {
             $this->addFlash('warning', 'All jury members must evaluate before making a decision.');
@@ -136,11 +149,20 @@ final class AdminController extends AbstractController
         }
 
         // Check if all jury members have evaluated
-        $juryMembers = $userRepository->findByRole('ROLE_JURY');
+        $juryMembers = $userRepository->findByRoleName('ROLE_JURY');
         $totalJuryCount = count($juryMembers);
-        $evaluatedJuryCount = count($submission->getEvaluations());
+        $juryEvaluations = array_filter(
+            $submission->getEvaluations()->toArray(),
+            function($evaluation) {
+                // Make sure the evaluation has a jury assigned to avoid potential null errors.
+                $jury = $evaluation->getJury();
+                return $jury !== null && in_array('ROLE_JURY', $jury->getRoles());
+            }
+        );
+        // dd($juryEvaluations, $totalJuryCount);
+        $evaluatedJuryCount = count($juryEvaluations);
 
-        if ($evaluatedJuryCount < $totalJuryCount) {
+        if ($evaluatedJuryCount != $totalJuryCount) {
             $this->addFlash('warning', 'All jury members must evaluate before making a decision.');
             return $this->redirectToRoute('admin_view_candidate', ['id' => $id]);
         }

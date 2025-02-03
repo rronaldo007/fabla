@@ -59,3 +59,4 @@ security:
         - { path: ^/apply/apply/confirmation, roles:  [ROLE_CANDIDATE] }
         - { path: ^/apply/finish, roles:  [ROLE_CANDIDATE] }
         - { path: ^/apply/confirmation, roles:  [ROLE_CANDIDATE] }
+        - { path: ^/admin, roles:  [ROLE_ADMIN, ROLE_JURY] }

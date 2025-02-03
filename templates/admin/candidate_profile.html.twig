@@ -275,12 +275,12 @@
                     {% if 'ROLE_ADMIN' in app.user.roles and submission.currentState == 'submitted' %}
                         <div class="mt-4">
                             <div class="d-grid gap-2">
-                                <a href="{{ path('admin_accept_candidate', {'id': submission.id}) }}"
+                                <a href="{{ path('admin_accept_submission', {'id': submission.id}) }}"
                                    class="btn btn-success"
                                    onclick="return confirm('Are you sure you want to accept this submission?');">
                                     <i class="fas fa-check me-2"></i>Accept Submission
                                 </a>
-                                <a href="{{ path('admin_reject_candidate', {'id': submission.id}) }}"
+                                <a href="{{ path('admin_reject_submission', {'id': submission.id}) }}"
                                    class="btn btn-danger"
                                    onclick="return confirm('Are you sure you want to reject this submission?');">
                                     <i class="fas fa-times me-2"></i>Reject Submission
