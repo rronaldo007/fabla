@@ -220,4 +220,19 @@ class EmailService
 
         $this->mailer->send($email);
     }
+
+    public function sendContactMessage(string $fromEmail, string $subject, string $message, string $name): void
+    {
+        $email = (new Email())
+            ->from($fromEmail)
+            ->to('rukundoronaldo4@gmail.com') // Replace with your admin email
+            ->subject("Contact Form: $subject")
+            ->html("
+                <p><strong>From:</strong> {$name} ({$fromEmail})</p>
+                <p><strong>Message:</strong></p>
+                <p>{$message}</p>
+            ");
+
+        $this->mailer->send($email);
+    }
 }
