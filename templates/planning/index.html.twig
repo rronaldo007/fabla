@@ -44,9 +44,9 @@
                 {% for reservation in reservations %}
                     <tr>
                         <td>{{ reservation.resource.name }}</td>
-                        <td>{{ reservation.startTime|slice(0, 10) }}</td>
+                        <td>{{ reservation.startTime|date('Y-m-d') }}</td>
                         <td>
-                            {% if reservation.startTime|slice(11, 5) == '08:00' %}
+                            {% if reservation.startTime|date('H:i') == '08:00' %}
                                 Morning (08:00 - 12:00)
                             {% else %}
                                 Afternoon (13:00 - 17:00)
@@ -64,12 +64,12 @@
                                     <i class="bi bi-trash"></i> Delete
                                 </a>
                                 <a href="{{ path('app_reservation_exchange', {'id': reservation.id}) }}" 
-                                   class="btn btn-sm btn-warning"
-                                   onclick="return confirm('Are you sure you want to delete this reservation?')">
-                                    <i class="bi bi-trash"></i> Exchnage
+                                   class="btn btn-sm btn-info"
+                                   onclick="return confirm('Are you sure you want to exchange this reservation?')">
+                                    <i class="bi bi-arrow-left-right"></i> Exchange
                                 </a>
                             {% else %}
-                                N/A
+                                <span class="text-muted">N/A</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -92,104 +92,69 @@
     {{ parent() }}
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script>
-        let calendar = null;
-
-        function destroyCalendar() {
-            if (calendar) {
-                calendar.destroy();
-                calendar = null;
-            }
-        }
-
-        async function fetchCalendarEvents() {
-            try {
-                const response = await fetch('{{ path('app_calendar_events') }}');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return await response.json();
-            } catch (error) {
-                console.error('Error fetching calendar events:', error);
-                return [];
-            }
-        }
-
-        async function initializeCalendar() {
-            console.log("Initializing calendar...");
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log("DOM fully loaded, initializing calendar...");
             
-            destroyCalendar();
-
             const calendarEl = document.getElementById('calendar');
             if (!calendarEl) {
                 console.error("Calendar element not found!");
                 return;
             }
 
-            try {
-                // Initialize with current events
-                const initialEvents = {{ calendarEvents|raw }};
-                
-                calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'timeGridDay',
-                    height: 'auto',
-                    headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'timeGridDay,timeGridWeek,dayGridMonth'
-                    },
-                    slotMinTime: '08:00:00',
-                    slotMaxTime: '18:00:00',
-                    allDaySlot: false,
-                    slotDuration: '01:00:00',
-                    events: initialEvents,
-                    eventDidMount: function(info) {
-                        info.el.title = info.event.title;
-                    },
-                    eventClick: function(info) {
-                        console.log('Event clicked:', info.event);
-                    },
-                    datesSet: async function(dateInfo) {
-                        // Fetch and update events when date range changes
-                        const events = await fetchCalendarEvents();
-                        calendar.removeAllEvents();
-                        calendar.addEventSource(events);
+            async function fetchCalendarEvents() {
+                try {
+                    const response = await fetch('{{ path('app_calendar_events') }}');
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch events');
                     }
-                });
-
-                calendar.render();
-                console.log("Calendar rendered successfully");
-
-                // Set up periodic refresh
-                setInterval(async () => {
-                    const events = await fetchCalendarEvents();
-                    calendar.removeAllEvents();
-                    calendar.addEventSource(events);
-                }, 30000); // Refresh every 30 seconds
-
-            } catch (error) {
-                console.error("Error initializing calendar:", error);
+                    return await response.json();
+                } catch (error) {
+                    console.error('Error fetching calendar events:', error);
+                    return [];
+                }
             }
-        }
 
-        // Handle all possible page load scenarios
-        function handlePageLoad() {
-            console.log("Page load handler triggered");
-            setTimeout(initializeCalendar, 0);
-        }
+            let events = [];
+            try {
+                events = {{ calendarEvents|raw }};
+            } catch (error) {
+                console.error("Error parsing initial events:", error);
+            }
 
-        // Regular page load
-        document.addEventListener('DOMContentLoaded', handlePageLoad);
+            let calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                height: 'auto',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'timeGridDay,timeGridWeek,dayGridMonth'
+                },
+                slotMinTime: '08:00:00',
+                slotMaxTime: '18:00:00',
+                allDaySlot: false,
+                slotDuration: '01:00:00',
+                events: events,
+                eventDidMount: function(info) {
+                    info.el.title = info.event.title;
+                },
+                eventClick: function(info) {
+                    console.log('Event clicked:', info.event);
+                },
+                datesSet: async function() {
+                    const newEvents = await fetchCalendarEvents();
+                    calendar.removeAllEvents();
+                    calendar.addEventSource(newEvents);
+                }
+            });
 
-        // Turbo load
-        document.addEventListener('turbo:load', handlePageLoad);
-        document.addEventListener('turbo:before-render', destroyCalendar);
+            calendar.render();
+            console.log("Calendar initialized successfully");
 
-        // Stimulus load (if using Stimulus)
-        document.addEventListener('stimulus:load', handlePageLoad);
-
-        // Immediate load if document is already ready
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            handlePageLoad();
-        }
+            setInterval(async () => {
+                const newEvents = await fetchCalendarEvents();
+                calendar.removeAllEvents();
+                calendar.addEventSource(newEvents);
+            }, 30000); // Refresh every 30 seconds
+        });
     </script>
 {% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Application List{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="mb-4">Applications</h1>
+
+    {% if submissions is empty %}
+        <div class="alert alert-warning">No applications found.</div>
+    {% else %}
+        <table class="table table-striped shadow-sm">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Candidate</th>
+                    <th>Submission Status</th>
+                    <th>Candidate Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for submission in submissions %}
+                    <tr>
+                        <td>{{ submission.identifier }}</td>
+                        <td>{{ submission.candidateProfile.userProfile.firstName }} {{ submission.candidateProfile.userProfile.lastName }}</td>
+                        <td>
+                            <span class="badge {% if submission.isSubmissionAccepted %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ submission.isSubmissionAccepted ? 'Accepted' : 'Pending' }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if submission.isCandidateAccepted %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ submission.isCandidateAccepted ? 'Accepted' : 'Pending' }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ path('application_confirmation', {'id': submission.id}) }}" class="btn btn-info btn-sm">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+{% endblock %}

@@ -160,23 +160,43 @@ final class ApplyController extends AbstractController
         ]);
     }
 
-    #[Route('/apply/confirmation/{id}', name: 'application_confirmation')]
-    public function confirmation(int $id, EntityManagerInterface $entityManager): Response
+    #[Route('/apply/confirmation/{id}', name: 'application_confirmation', defaults: ['id' => null])]
+    public function confirmation(?int $id, SubmissionRepository $submissionRepository): Response
     {
-        // Attempt to fetch the submission by ID
-        $submission = $entityManager->getRepository(Submission::class)->find($id);
+        if ($id !== null) {
+            // Fetch single submission
+            $submission = $submissionRepository->find($id);
 
-        // Check if the submission exists
-        if (!$submission) {
-            $this->addFlash('error', 'The requested submission does not exist.');
-            return $this->redirectToRoute('app_apply_page'); // Redirect to an appropriate route
+            if (!$submission) {
+                throw $this->createNotFoundException('The requested submission does not exist.');
+            }
+
+            return $this->render('apply/confirmation.html.twig', [
+                'submission' => $submission,
+            ]);
         }
 
-        // Render the confirmation page with the submission
-        return $this->render('apply/confirmation.html.twig', [
-            'submission' => $submission,
+        // If ID is null, fetch all submissions
+        $submissions = $submissionRepository->findAll();
+
+        return $this->render('apply/submissions.html.twig', [
+            'submissions' => $submissions,
         ]);
     }
+
+    #[Route('/applications', name: 'application_list')]
+    public function applicationList(EntityManagerInterface $entityManager): Response
+    {
+        // Fetch all submissions
+        $submissions = $entityManager->getRepository(Submission::class)->findAll();
+
+        return $this->render('apply/submissions.html.twig', [
+            'submissions' => $submissions,
+        ]);
+    }
+
+
+
 
     #[Route('/application/finish', name: 'app_apply_finish')]
     public function finish(Request $request): Response
