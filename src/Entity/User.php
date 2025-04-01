@@ -1,5 +1,5 @@
 <?php
-
+// User.php
 namespace App\Entity;
 
 use App\Repository\UserRepository;
@@ -50,17 +50,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $emailValidationTokenExpiresAt = null;
 
-    public function __construct()
-    {
-        $this->workflowStates = new ArrayCollection();
-        $this->evaluations = new ArrayCollection();
-    }
+    private string $currentState;
+
+    /**
+     * @var Collection<int, Evaluation>
+     */
+    #[ORM\OneToMany(targetEntity: Evaluation::class, mappedBy: 'jury')]
+    private Collection $evaluations;
 
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
     private ?string $resetPasswordToken = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $resetPasswordTokenExpiresAt = null;
+
+    public function __construct()
+    {
+        $this->workflowStates = new ArrayCollection();
+        $this->evaluations = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -90,14 +98,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-
-    private string $currentState;
-
-    /**
-     * @var Collection<int, Evaluation>
-     */
-    #[ORM\OneToMany(targetEntity: Evaluation::class, mappedBy: 'Jury')]
-    private Collection $evaluations;
 
     public function isActive(): ?bool
     {
@@ -296,4 +296,3 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->resetPasswordTokenExpiresAt && new \DateTime() < $this->resetPasswordTokenExpiresAt;
     }
 }
-

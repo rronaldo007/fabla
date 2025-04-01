@@ -1,8 +1,10 @@
 <?php
-
+// Specialization.php
 namespace App\Entity;
 
 use App\Repository\SpecializationRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -20,8 +22,13 @@ class Specialization
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\OneToOne(mappedBy: 'specialization', cascade: ['persist', 'remove'])]
-    private ?CandidateProfile $candidateProfile = null;
+    #[ORM\OneToMany(mappedBy: 'specialization', targetEntity: CandidateProfile::class)]
+    private Collection $candidateProfiles;
+
+    public function __construct()
+    {
+        $this->candidateProfiles = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -52,24 +59,32 @@ class Specialization
         return $this;
     }
 
-    public function getCandidateProfile(): ?CandidateProfile
+    /**
+     * @return Collection<int, CandidateProfile>
+     */
+    public function getCandidateProfiles(): Collection
     {
-        return $this->candidateProfile;
+        return $this->candidateProfiles;
     }
 
-    public function setCandidateProfile(?CandidateProfile $candidateProfile): static
+    public function addCandidateProfile(CandidateProfile $candidateProfile): static
     {
-        // unset the owning side of the relation if necessary
-        if ($candidateProfile === null && $this->candidateProfile !== null) {
-            $this->candidateProfile->setSpecialization(null);
-        }
-
-        // set the owning side of the relation if necessary
-        if ($candidateProfile !== null && $candidateProfile->getSpecialization() !== $this) {
+        if (!$this->candidateProfiles->contains($candidateProfile)) {
+            $this->candidateProfiles->add($candidateProfile);
             $candidateProfile->setSpecialization($this);
         }
 
-        $this->candidateProfile = $candidateProfile;
+        return $this;
+    }
+
+    public function removeCandidateProfile(CandidateProfile $candidateProfile): static
+    {
+        if ($this->candidateProfiles->removeElement($candidateProfile)) {
+            // set the owning side to null (unless already changed)
+            if ($candidateProfile->getSpecialization() === $this) {
+                $candidateProfile->setSpecialization(null);
+            }
+        }
 
         return $this;
     }

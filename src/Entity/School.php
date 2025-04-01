@@ -1,8 +1,10 @@
 <?php
-
+// School.php
 namespace App\Entity;
 
 use App\Repository\SchoolRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -20,8 +22,13 @@ class School
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $location = null;
 
-    #[ORM\OneToOne(mappedBy: 'currentSchool', cascade: ['persist', 'remove'])]
-    private ?CandidateProfile $candidateProfile = null;
+    #[ORM\OneToMany(mappedBy: 'currentSchool', targetEntity: CandidateProfile::class)]
+    private Collection $candidateProfiles;
+
+    public function __construct()
+    {
+        $this->candidateProfiles = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -52,24 +59,32 @@ class School
         return $this;
     }
 
-    public function getCandidateProfile(): ?CandidateProfile
+    /**
+     * @return Collection<int, CandidateProfile>
+     */
+    public function getCandidateProfiles(): Collection
     {
-        return $this->candidateProfile;
+        return $this->candidateProfiles;
     }
 
-    public function setCandidateProfile(?CandidateProfile $candidateProfile): static
+    public function addCandidateProfile(CandidateProfile $candidateProfile): static
     {
-        // unset the owning side of the relation if necessary
-        if ($candidateProfile === null && $this->candidateProfile !== null) {
-            $this->candidateProfile->setCurrentSchool(null);
-        }
-
-        // set the owning side of the relation if necessary
-        if ($candidateProfile !== null && $candidateProfile->getCurrentSchool() !== $this) {
+        if (!$this->candidateProfiles->contains($candidateProfile)) {
+            $this->candidateProfiles->add($candidateProfile);
             $candidateProfile->setCurrentSchool($this);
         }
 
-        $this->candidateProfile = $candidateProfile;
+        return $this;
+    }
+
+    public function removeCandidateProfile(CandidateProfile $candidateProfile): static
+    {
+        if ($this->candidateProfiles->removeElement($candidateProfile)) {
+            // set the owning side to null (unless already changed)
+            if ($candidateProfile->getCurrentSchool() === $this) {
+                $candidateProfile->setCurrentSchool(null);
+            }
+        }
 
         return $this;
     }

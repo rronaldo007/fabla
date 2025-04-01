@@ -1,10 +1,8 @@
 <?php
-
+// Evaluation.php
 namespace App\Entity;
 
 use App\Repository\EvaluationRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -33,9 +31,8 @@ class Evaluation
 
     #[ORM\ManyToOne(targetEntity: Submission::class, inversedBy: 'evaluations')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Submission $submission = null; // Correction ici
+    private ?Submission $submission = null;
 
-    
     public function getId(): ?int
     {
         return $this->id;
@@ -106,5 +103,4 @@ class Evaluation
         $this->submission = $submission;
         return $this;
     }
-
 }

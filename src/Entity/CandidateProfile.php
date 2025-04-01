@@ -1,5 +1,5 @@
 <?php
-
+// CandidateProfile.php
 namespace App\Entity;
 
 use App\Repository\CandidateProfileRepository;
@@ -17,7 +17,6 @@ class CandidateProfile
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-    
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $programEntryDate = null;
@@ -28,15 +27,15 @@ class CandidateProfile
     #[ORM\Column(length: 255)]
     private ?string $studentCardPath = null;
 
-    #[ORM\ManyToOne(cascade: ['persist'])]
+    #[ORM\ManyToOne(inversedBy: 'candidateProfiles')]
     #[ORM\JoinColumn(nullable: true)]
     private ?School $currentSchool = null;
 
-    #[ORM\ManyToOne(cascade: ['persist'])]
+    #[ORM\ManyToOne(inversedBy: 'candidateProfiles')]
     #[ORM\JoinColumn(nullable: true)]
     private ?Specialization $specialization = null;
 
-    #[ORM\ManyToOne(cascade: ['persist'])]
+    #[ORM\ManyToOne(inversedBy: 'candidateProfiles')]
     #[ORM\JoinColumn(nullable: true)]
     private ?Nationality $nationality = null;
 
@@ -50,11 +49,11 @@ class CandidateProfile
      * @var Collection<int, Evaluation>
      */
     #[ORM\OneToMany(targetEntity: Evaluation::class, mappedBy: 'candidat')]
-    private Collection $note;
+    private Collection $evaluations;
 
     public function __construct()
     {
-        $this->note = new ArrayCollection();
+        $this->evaluations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -161,27 +160,27 @@ class CandidateProfile
     /**
      * @return Collection<int, Evaluation>
      */
-    public function getNote(): Collection
+    public function getEvaluations(): Collection
     {
-        return $this->note;
+        return $this->evaluations;
     }
 
-    public function addNote(Evaluation $note): static
+    public function addEvaluation(Evaluation $evaluation): static
     {
-        if (!$this->note->contains($note)) {
-            $this->note->add($note);
-            $note->setCandidat($this);
+        if (!$this->evaluations->contains($evaluation)) {
+            $this->evaluations->add($evaluation);
+            $evaluation->setCandidat($this);
         }
 
         return $this;
     }
 
-    public function removeNote(Evaluation $note): static
+    public function removeEvaluation(Evaluation $evaluation): static
     {
-        if ($this->note->removeElement($note)) {
+        if ($this->evaluations->removeElement($evaluation)) {
             // set the owning side to null (unless already changed)
-            if ($note->getCandidat() === $this) {
-                $note->setCandidat(null);
+            if ($evaluation->getCandidat() === $this) {
+                $evaluation->setCandidat(null);
             }
         }
 
