@@ -16,12 +16,33 @@ class UserRepository extends ServiceEntityRepository
         parent::__construct($registry, User::class);
     }
 
+    /**
+     * Count users by role name
+     */
+    public function countByRoleName(string $roleName): int
+    {
+        return $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->join('u.role', 'r')
+            ->where('r.name = :roleName')
+            ->andWhere('u.is_active = :active')
+            ->setParameter('roleName', $roleName)
+            ->setParameter('active', true)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Find users by role name
+     */
     public function findByRoleName(string $roleName): array
     {
         return $this->createQueryBuilder('u')
-            ->innerJoin('u.role', 'r')
-            ->andWhere('r.name = :role')
-            ->setParameter('role', $roleName)
+            ->join('u.role', 'r')
+            ->where('r.name = :roleName')
+            ->andWhere('u.is_active = :active')
+            ->setParameter('roleName', $roleName)
+            ->setParameter('active', true)
             ->getQuery()
             ->getResult();
     }

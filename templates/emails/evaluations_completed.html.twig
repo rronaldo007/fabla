@@ -1,0 +1,154 @@
+{# templates/emails/admin/evaluations_completed.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans %}email.admin.evaluation.completed.subject{% endtrans %}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #3498db;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .decision-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        .accept-button {
+            background-color: #2ecc71;
+        }
+        .reject-button {
+            background-color: #e74c3c;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .completed-box {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 10px 15px;
+            margin: 20px 0;
+        }
+        .score-summary {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{% trans %}email.admin.evaluation.completed.title{% endtrans %}</h1>
+    </div>
+    <div class="content">
+        <p>{% trans %}email.admin.evaluation.completed.greeting{% endtrans %} {{ adminUser.firstName }},</p>
+        
+        <div class="completed-box">
+            <p><strong>{% trans %}email.admin.evaluation.completed.notification{% endtrans %}</strong></p>
+            <p>{% trans %}email.admin.evaluation.completed.all_evaluations{% endtrans %}</p>
+        </div>
+        
+        <h3>{% trans %}email.admin.evaluation.completed.submission_details{% endtrans %}</h3>
+        <table>
+            <tr>
+                <th>{% trans %}email.admin.evaluation.completed.submission_id{% endtrans %}</th>
+                <td>{{ submission.identifier }}</td>
+            </tr>
+            <tr>
+                <th>{% trans %}email.admin.evaluation.completed.candidate{% endtrans %}</th>
+                <td>{{ candidateUser.firstName }} {{ candidateUser.lastName }}</td>
+            </tr>
+        </table>
+        
+        <h3>{% trans %}email.admin.evaluation.completed.evaluation_summary{% endtrans %}</h3>
+        <table>
+            <tr>
+                <th>{% trans %}email.admin.evaluation.completed.jury_member{% endtrans %}</th>
+                <th>{% trans %}email.admin.evaluation.completed.score{% endtrans %}</th>
+                <th>{% trans %}email.admin.evaluation.completed.date{% endtrans %}</th>
+            </tr>
+            {% set totalScore = 0 %}
+            {% set evaluationCount = 0 %}
+            {% for eval in evaluations %}
+            <tr>
+                <td>{{ eval.jury.firstName }} {{ eval.jury.lastName }}</td>
+                <td>{{ eval.note }}/20</td>
+                <td>{{ eval.createdAt|date('d/m/Y') }}</td>
+            </tr>
+            {% set totalScore = totalScore + eval.note %}
+            {% set evaluationCount = evaluationCount + 1 %}
+            {% endfor %}
+        </table>
+        
+        <div class="score-summary">
+            {% if evaluationCount > 0 %}
+                {% set averageScore = (totalScore / evaluationCount)|round(1) %}
+                <p>{% trans %}email.admin.evaluation.completed.average_score{% endtrans %}: <span style="color: {% if averageScore >= 14 %}#2ecc71{% elseif averageScore >= 10 %}#f39c12{% else %}#e74c3c{% endif %}">{{ averageScore }}/20</span></p>
+            {% endif %}
+        </div>
+        
+        <p>{% trans %}email.admin.evaluation.completed.decision_needed{% endtrans %}</p>
+        
+        <div class="decision-buttons">
+            <a href="{{ submissionUrl }}?action=accept" class="button accept-button">{% trans %}email.admin.evaluation.completed.accept_button{% endtrans %}</a>
+            <a href="{{ submissionUrl }}?action=reject" class="button reject-button">{% trans %}email.admin.evaluation.completed.reject_button{% endtrans %}</a>
+        </div>
+        
+        <p>{% trans %}email.admin.evaluation.completed.view_details{% endtrans %}</p>
+        
+        <p style="text-align: center;">
+            <a href="{{ submissionUrl }}" class="button">{% trans %}email.admin.evaluation.completed.view_all_button{% endtrans %}</a>
+        </p>
+        
+        <p>{% trans %}email.admin.evaluation.completed.final_note{% endtrans %}</p>
+    </div>
+    <div class="footer">
+        <p>{% trans %}email.admin.footer.automated{% endtrans %}</p>
+        <p>{% trans %}email.admin.footer.confidential{% endtrans %}</p>
+        <p>© {{ "now"|date("Y") }} FabLab Platform - Admin Notifications</p>
+    </div>
+</body>
+</html>

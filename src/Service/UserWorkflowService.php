@@ -88,7 +88,6 @@ class UserWorkflowService implements EventSubscriberInterface
         }
 
         // Send the confirmation email.
-        $this->sendEmail($user);
 
         // Create and persist a new WorkflowState record.
         $workflowState = new WorkflowState();
@@ -102,31 +101,5 @@ class UserWorkflowService implements EventSubscriberInterface
         $this->em->flush();
     }
 
-    /**
-     * Sends the confirmation email to the user.
-     *
-     * @param User $user
-     *
-     * @return bool Returns true if the email was sent successfully.
-     */
-    private function sendEmail(User $user): bool
-    {
-        try {
-            $email = (new Email())
-                ->from('no-reply@yourdomain.com')
-                ->to($user->getEmail())
-                ->subject('Confirm Your Registration')
-                ->html(
-                    '<p>Please confirm your email by clicking the link below:</p>' .
-                    '<a href="' . $this->baseUrl . 'validate-email/' . $user->getEmailValidationToken() . '">Confirm Email</a>'
-                );
-
-            $this->mailer->send($email);
-            $this->logger->info('Email sent successfully to ' . $user->getEmail());
-            return true;
-        } catch (TransportExceptionInterface $e) {
-            $this->logger->error('Failed to send email to ' . $user->getEmail() . ': ' . $e->getMessage());
-            return false;
-        }
-    }
+ 
 }

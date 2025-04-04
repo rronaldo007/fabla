@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'email.evaluation.started.subject'|trans }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #3498db;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 10px 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ 'email.evaluation.started.title'|trans }}</h1>
+    </div>
+    <div class="content">
+        <p>{{ 'email.evaluation.started.greeting'|trans }} {{ user.userProfile.firstName }},</p>
+        
+        <p>{{ 'email.evaluation.started.notification'|trans }}</p>
+        
+        <div class="info-box">
+            <p><strong>{{ 'email.evaluation.started.reference_number'|trans }}</strong>: {{ submission.identifier }}</p>
+        </div>
+        
+        <p>{{ 'email.evaluation.started.process_details'|trans }}</p>
+        
+        <p>{{ 'email.evaluation.started.timeline'|trans }}</p>
+        
+
+        <p>{{ 'email.evaluation.started.no_action'|trans }}</p>
+    </div>
+    <div class="footer">
+        <p>{{ 'email.footer.no_reply'|trans }}</p>
+        <p>© {{ "now"|date("Y") }} FabLab Platform. {{ 'email.footer.all_rights'|trans }}</p>
+    </div>
+</body>
+</html>

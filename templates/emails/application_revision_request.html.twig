@@ -1,0 +1,91 @@
+{# templates/emails/application_revision_request.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans %}email.application.revision.subject{% endtrans %}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f39c12;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #f39c12;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+        }
+        .revision-box {
+            background-color: #fff3e0;
+            border-left: 4px solid #f39c12;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .deadline {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{% trans %}email.application.revision.title{% endtrans %}</h1>
+    </div>
+    <div class="content">
+        <p>{% trans %}email.application.revision.greeting{% endtrans %} {{ user.firstName }},</p>
+        
+        <p>{% trans %}email.application.revision.intro{% endtrans %}</p>
+        
+        <p>{% trans %}email.application.revision.reference_number{% endtrans %}: <strong>{{ submission.identifier }}</strong></p>
+        
+        <div class="revision-box">
+            <h3>{% trans %}email.application.revision.feedback_title{% endtrans %}</h3>
+            <p>{{ revisionDetails|nl2br }}</p>
+        </div>
+        
+        {% if revisionDeadline %}
+        <p class="deadline">{% trans %}email.application.revision.deadline{% endtrans %}: {{ revisionDeadline|date('F j, Y') }}</p>
+        {% endif %}
+        
+        <p>{% trans %}email.application.revision.instructions{% endtrans %}</p>
+        
+        <p style="text-align: center;">
+            <a href="{{ revisionUrl }}" class="button">{% trans %}email.application.revision.update_button{% endtrans %}</a>
+        </p>
+        
+        <p>{% trans %}email.application.revision.support{% endtrans %}</p>
+    </div>
+    <div class="footer">
+        <p>{% trans %}email.footer.no_reply{% endtrans %}</p>
+        <p>© {{ "now"|date("Y") }} FabLab Platform. {% trans %}email.footer.all_rights{% endtrans %}</p>
+    </div>
+</body>
+</html>

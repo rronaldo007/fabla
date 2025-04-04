@@ -106,7 +106,6 @@
                             </div>
                         </div>
                         {% endif %}
-                        
                     </div>
                 </div>
 
@@ -145,6 +144,7 @@
 
                 <!-- Notes -->
                 {% if submission.evaluations is not empty %}
+                    <div class="col-12">
                         <div class="mt-4">
                             <h5 class="mb-3"><i class="fas fa-star text-warning me-2"></i>Evaluations</h5>
                             <div class="table-responsive">
@@ -181,11 +181,14 @@
                                 </table>
                             </div>
                         </div>
-                    {% else %}
+                    </div>
+                {% else %}
+                    <div class="col-12">
                         <div class="alert alert-info mt-3">
                             <i class="fas fa-info-circle me-2"></i>No evaluations have been submitted yet.
                         </div>
-                    {% endif %}
+                    </div>
+                {% endif %}
 
                 <!-- Workflow Tables -->
                 <div class="col-12">
@@ -294,53 +297,92 @@
                         <div class="mt-4">
                             <h5><i class="fas fa-check-circle me-2"></i>Candidate Decision</h5>
                             <div class="d-grid gap-2">
-
                                 <a href="{{ path('admin_accept_candidate', {'id': submission.id}) }}" 
                                     class="btn btn-success"
                                     onclick="return confirm('Are you sure you want to accept this candidate?');">
-                                        <i class="fas fa-check me-2"></i>Accept Candidate
-                                    </a>
-                                    <a href="{{ path('admin_reject_candidate', {'id': submission.id}) }}" 
+                                        <i class="fas fa-check me-2"></i>Accept Submission
+                                </a>
+                                <a href="{{ path('admin_reject_candidate', {'id': submission.id}) }}" 
                                     class="btn btn-danger"
                                     onclick="return confirm('Are you sure you want to reject this candidate?');">
-                                        <i class="fas fa-times me-2"></i>Reject Candidate
-                                    </a>
+                                        <i class="fas fa-times me-2"></i>Reject Submission
+                                </a>
                             </div>
                         </div>
                     {% endif %}
 
                     <!-- Candidate Status Display -->
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-body text-center">
-                            {% if submission.currentState == 'candidate_approved' %}
-                                <div class="alert alert-success">
-                                    <i class="fas fa-check-circle me-2"></i> <strong>Candidate Accepted</strong>
-                                    <p class="mb-0 text-muted">This candidate has been officially selected.</p>
-                                </div>
-                            {% elseif submission.currentState == 'candidate_rejected' %}
-                                <div class="alert alert-danger">
-                                    <i class="fas fa-times-circle me-2"></i> <strong>Candidate Rejected</strong>
-                                    <p class="mb-0 text-muted">This candidate was not selected.</p>
-                                </div>
-                            {% else %}
-                                <div class="alert alert-info">
-                                    <i class="fas fa-exclamation-circle me-2"></i> <strong>Decision Pending</strong>
-                                    <p class="mb-0 text-muted">The jury has not yet made a decision.</p>
-                                </div>
-                            {% endif %}
+                    <div class="mt-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                {% if submission.currentState == 'candidate_approved' %}
+                                    <div class="alert alert-success">
+                                        <i class="fas fa-check-circle me-2"></i> <strong>Candidate Accepted</strong>
+                                        <p class="mb-0 text-muted">This candidate has been officially selected.</p>
+                                    </div>
+                                {% elseif submission.currentState == 'candidate_rejected' %}
+                                    <div class="alert alert-danger">
+                                        <i class="fas fa-times-circle me-2"></i> <strong>Candidate Rejected</strong>
+                                        <p class="mb-0 text-muted">This candidate was not selected.</p>
+                                    </div>
+                                {% else %}
+                                    {# Get the total number of users with ROLE_JURY #}
+                                    {% if jury_count is defined %}
+                                        {# Use the jury_count if it's passed from the controller #}
+                                        {% set total_jury_count = jury_count %}
+                                    {% elseif juries is defined %}
+                                        {# Use the length of juries array if it's passed from the controller #}
+                                        {% set total_jury_count = juries|length %}
+                                    {% else %}
+                                        {# If neither is available, check if we're in the final evaluation stage #}
+                                        {% set all_evaluations_complete = submission.isAllEvaluationsComplete ?? false %}
+                                        
+                                        {% if not all_evaluations_complete and submission.evaluations|length > 0 %}
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-exclamation-circle me-2"></i> <strong>Decision Pending</strong>
+                                                <p class="mb-0 text-muted">The jury has not yet made a decision.</p>
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+
+                                    
+                                    {# If we have a total_jury_count, use it to determine if all evaluations are complete #}
+                                    {% if total_jury_count is defined %}
+                                        {% set evaluation_count = submission.evaluations|length %}
+
+                                        
+                                        {% if evaluation_count < total_jury_count %}
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-exclamation-circle me-2"></i> <strong>Decision Pending</strong>
+                                                <p class="mb-0 text-muted">The jury has not yet made a decision.</p>
+                                            </div>
+                                        {% else %}
+                                            {# All jury members have submitted evaluations #}
+                                            {% if 'ROLE_ADMIN' in app.user.roles %}
+                                                <div class="alert alert-info mt-3 mb-0">
+                                                    <p><i class="fas fa-info-circle me-2"></i>Apres dialect de l'admin et de l'etudiant vous encore acceptez la candidature</p>
+                                                    <a href="{{ path('admin_accept_candidate', {'id': submission.id}) }}" class="btn btn-success">
+                                                        <i class="fas fa-check me-2"></i>Accept Candidate
+                                                    </a>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
-
-                    {% if 'ROLE_JURY' in app.user.roles and submission.currentState == 'under_review'  %}
-                        {% set jury_has_noted = false %}
-
+                    
+                    {% if 'ROLE_JURY' in app.user.roles %}
+                        {% set current_jury_has_evaluated = false %}
+                        
                         {% for evaluation in submission.evaluations %}
                             {% if evaluation.jury.id == app.user.id %}
-                                {% set jury_has_noted = true %}
+                                {% set current_jury_has_evaluated = true %}
                             {% endif %}
                         {% endfor %}
-
-                        {% if not jury_has_noted %}
+                        
+                        {% if not current_jury_has_evaluated %}
                             <div class="mt-4">
                                 <div class="d-grid gap-2">
                                     <a href="{{ path('jury_noter_submission', {'id': submission.id}) }}" class="btn btn-success">
@@ -350,26 +392,15 @@
                             </div>
                         {% endif %}
                     {% endif %}
+                    
                     {% if submission.currentState == 'approved' and submission.isSubmissionAccepted %}
                         <div class="alert alert-success mt-3 mb-0">
                             <i class="fas fa-check-circle me-2"></i>This submission has been approved.
-                        </div>
-                    {% elseif submission.currentState == 'rejected' and not submission.isSubmissionAccepted %}
-                        <div class="alert alert-danger mt-3 mb-0">
-                            <i class="fas fa-times-circle me-2"></i>This submission has been rejected.
-                        </div>
-                        <div class="alert alert-info mt-3 mb-0">
-                            <p><i class="fas fa-info-circle me-2"></i>Apres dialect de l'admin et de l'etudiant vous encore acceptez la candidature</p>
-                            <a href="{{ path('admin_accept_submission', {'id': submission.id}) }}" class="btn btn-success">
-                                <i class="fas fa-check me-2"></i>Accept Candidate
-                            </a>
                         </div>
                     {% endif %}
                 </div>
             </div>
         </div>
-
-        
     </div>
 
     <!-- Back Button -->

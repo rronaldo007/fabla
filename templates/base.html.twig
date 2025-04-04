@@ -52,6 +52,11 @@
             <a class="btn btn-primary" href="{{ path('app_profile_completion', {'id': app.user.id}) }}">Complete Your Profile</a>
         </div>
         {% endif %}
+        {% if app.user and app.user.currentPlace == "email_sent" %}
+        <div class="alert alert-danger alert-dismissible fade show">
+            <p>Validate your email to continue</p>
+        </div>
+        {% endif %}
 
         {% block body %}{% endblock %}
     </div>

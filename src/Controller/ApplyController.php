@@ -60,14 +60,12 @@ final class ApplyController extends AbstractController
         EntityManagerInterface $entityManager,
         Request $request,
     ): Response {
-        // Get the edition first
         $edition = $entityManager->getRepository(Edition::class)->find($id);
         if (!$edition) {
             return $this->redirectToRoute('app_four_o_four');
         }
 
 
-        // Check if edition is current
         if (!$edition->isCurrent()) {
             $this->addFlash('error', 'This edition is not currently accepting applications.');
             return $this->redirectToRoute('app_apply_page');
@@ -134,7 +132,6 @@ final class ApplyController extends AbstractController
             $edition->addSubmission($submission);
 
             
-            // Add the submission to the edition
             $submission->addEdition($edition);
 
             if ($isNewCandidateProfile) {
@@ -164,7 +161,6 @@ final class ApplyController extends AbstractController
     public function confirmation(?int $id, SubmissionRepository $submissionRepository): Response
     {
         if ($id !== null) {
-            // Fetch single submission
             $submission = $submissionRepository->find($id);
 
             if (!$submission) {
@@ -176,7 +172,6 @@ final class ApplyController extends AbstractController
             ]);
         }
 
-        // If ID is null, fetch all submissions
         $submissions = $submissionRepository->findAll();
 
         return $this->render('apply/submissions.html.twig', [
@@ -187,7 +182,6 @@ final class ApplyController extends AbstractController
     #[Route('/applications', name: 'application_list')]
     public function applicationList(EntityManagerInterface $entityManager): Response
     {
-        // Fetch all submissions
         $submissions = $entityManager->getRepository(Submission::class)->findAll();
 
         return $this->render('apply/submissions.html.twig', [
@@ -201,14 +195,12 @@ final class ApplyController extends AbstractController
     #[Route('/application/finish', name: 'app_apply_finish')]
     public function finish(Request $request): Response
     {
-        // Validate user and get profiles
         $user = $this->getUser() ?? throw $this->createAccessDeniedException('Login required');
         $candidateProfile = $user->getUserProfile()?->getCandidateProfile() 
             ?? $this->redirectToRoute('app_home');
         $submission = $this->submissionRepository->findOneBy(['candidateProfile' => $candidateProfile])
             ?? throw $this->createNotFoundException('No active submission');
 
-        // Create and handle form
         $subject = new SubjectStudy();
         $form = $this->createFormBuilder(null, [
             'csrf_protection' => true,
@@ -222,7 +214,6 @@ final class ApplyController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                // Handle CV upload
                 $cvFile = $form->get('cv')->get('CV')->getData();
                 if ($cvFile) {
                     $userId = $user->getId();
@@ -234,7 +225,6 @@ final class ApplyController extends AbstractController
                     $candidateProfile->setCV('uploads/cvs/' . $userId . '/' . $cvFilename);
                 }
 
-                // Handle video upload
                 $videoFile = $form->get('subject')->get('videoPresantation')->getData();
                 if ($videoFile) {
                     $userId = $user->getId();
@@ -246,18 +236,15 @@ final class ApplyController extends AbstractController
                     $subject->setVideoPresantation('uploads/videos/' . $userId . '/' . $videoFilename);
                 }
 
-                // Set relationships and workflow
                 $submission->setSubject($subject);
                 $subject->setSubmission($submission);
                 
-                // Create workflow with initial state
                 $workflow = new SubmissionWorkflow();
                 $workflow->setSubmission($submission);
-                $workflow->setState('under_review'); // Changed from 'under_review' to 'submitted'
+                $workflow->setState('under_review');
                 $submission->addSubmissionWorkflow($workflow);
                 $submission->setCurrentState('under_review');
 
-                // Persist changes
                 $this->entityManager->persist($subject);
                 $this->entityManager->persist($submission);
                 $this->entityManager->persist($workflow);
@@ -271,7 +258,6 @@ final class ApplyController extends AbstractController
                 $this->addFlash('error', $e->getMessage());
             }
         } elseif ($form->isSubmitted()) {
-            // Debug form errors
             foreach ($form->getErrors(true) as $error) {
                 $this->addFlash('error', $error->getMessage());
             }
@@ -291,13 +277,11 @@ final class ApplyController extends AbstractController
     {
         $submission = $entityManager->getRepository(Submission::class)->find($id);
         
-        // Check if the submission exists
         if (!$submission) {
             $this->addFlash('error', 'The requested submission does not exist.');
             return $this->redirectToRoute('app_apply_page');
         }
         
-        // Fetch all shared resources
         $resources = $entityManager->getRepository(SharedResource::class)->findAll();
 
         return $this->render('apply/results.html.twig', [

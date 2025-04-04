@@ -1,0 +1,303 @@
+# translations/messages.fr.yaml
+
+# Authentication and User Management
+auth:
+  email:
+    already_used: 'Cette adresse e-mail est déjà utilisée.'
+    invalid_token: 'Token de validation d''e-mail invalide.'
+    expired_token: 'Le token de validation d''e-mail a expiré.'
+    invalid_state: 'État invalide pour la validation de l''e-mail.'
+    validation_success: 'Votre e-mail a été validé avec succès.'
+    verification_resent: 'Un nouvel e-mail de vérification a été envoyé à votre adresse.'
+    check_inbox: 'Veuillez vérifier votre boîte de réception pour les instructions de vérification.'
+  password:
+    reset_link_sent: 'Un lien de réinitialisation de mot de passe a été envoyé à votre e-mail.'
+    check_email_for_instructions: 'Si un compte existe avec cet e-mail, vous recevrez des instructions de réinitialisation de mot de passe.'
+    invalid_reset_token: 'Token de réinitialisation invalide ou expiré.'
+    passwords_mismatch: 'Les mots de passe ne correspondent pas.'
+    reset_success: 'Votre mot de passe a été réinitialisé avec succès.'
+    incorrect_current: 'Mot de passe actuel incorrect.'
+    change_success: 'Votre mot de passe a été modifié avec succès.'
+  already_logged_in: 'Vous êtes déjà connecté.'
+  invalid_credentials: 'Identifiants invalides.'
+  login_required: 'Vous devez être connecté pour accéder à cette page.'
+
+# Application Process
+apply:
+  edition:
+    not_accepting: 'Cette édition n''accepte pas de candidatures actuellement.'
+  submission:
+    already_exists: 'Vous avez déjà une candidature pour cette édition.'
+    initial_success: 'Votre candidature initiale a été soumise avec succès. Veuillez compléter toutes les informations requises pour finaliser votre candidature.'
+    complete_success: 'Candidature soumise avec succès. Elle est maintenant en cours d''examen.'
+  error:
+    profile_not_found: 'Profil utilisateur non trouvé.'
+    submission_not_found: 'La candidature demandée n''existe pas.'
+    no_active_submission: 'Aucune candidature active trouvée.'
+    login_required: 'Connexion requise pour accéder à cette page.'
+  admin:
+    submission_approved: 'La candidature a été approuvée avec succès.'
+    submission_rejected: 'La candidature a été rejetée.'
+    reminder_sent: 'Un e-mail de rappel a été envoyé au candidat.'
+
+# Submission Management
+submission:
+  not_found: 'Candidature non trouvée.'
+  accepted: 'La candidature a été acceptée.'
+  rejected: 'La candidature a été rejetée.'
+  revision_requested: 'Une révision a été demandée au candidat.'
+  revision_details_required: 'Veuillez fournir des détails sur ce qui doit être révisé.'
+
+# Evaluation
+evaluation:
+  success:
+    created: 'L''évaluation a été créée avec succès.'
+    updated: 'L''évaluation a été mise à jour avec succès.'
+  completed: 'Toutes les évaluations sont maintenant complètes pour cette candidature.'
+  average_score: 'Note Moyenne'
+  jury_notes: 'Notes du Jury'
+  score_distribution: 'Distribution des Notes'
+
+# Email Templates - Generic Elements
+email:
+  footer:
+    no_reply: 'Ceci est un message automatique. Veuillez ne pas répondre directement à cet e-mail.'
+    all_rights: 'Tous droits réservés.'
+    confidential: 'Cet e-mail contient des informations confidentielles. Veuillez ne pas transférer ou partager son contenu.'
+  
+  # Registration and Authentication Emails
+  registration:
+    subject: 'Confirmez Votre Inscription'
+    welcome: 'Bienvenue sur la Plateforme FabLab'
+    greeting: 'Bonjour'
+    thank_you: 'Merci de votre inscription à la Plateforme FabLab. Nous sommes ravis de vous accueillir dans notre communauté.'
+    please_confirm: 'Pour compléter votre inscription, veuillez confirmer votre adresse e-mail en cliquant sur le bouton ci-dessous :'
+    confirm_button: 'Confirmer Mon E-mail'
+    or_copy_link: 'Ou copiez et collez ce lien dans votre navigateur :'
+    link_expiration: 'Ce lien de confirmation expire le'
+    ignore: 'Si vous n''avez pas créé de compte, vous pouvez ignorer cet e-mail en toute sécurité.'
+  
+  validation:
+    success:
+      subject: 'E-mail Validé avec Succès'
+      title: 'Validation d''E-mail Terminée'
+      greeting: 'Bonjour'
+      confirmed: 'Votre e-mail a été validé avec succès.'
+      account_ready: 'Votre compte est maintenant actif. Vous pouvez désormais vous connecter et accéder à toutes les fonctionnalités de la plateforme.'
+      login_button: 'Se Connecter Maintenant'
+      questions: 'Si vous avez des questions, veuillez contacter notre équipe de support.'
+  
+  password:
+    reset:
+      subject: 'Demande de Réinitialisation de Mot de Passe'
+      title: 'Réinitialisez Votre Mot de Passe'
+      greeting: 'Bonjour'
+      received_request: 'Nous avons reçu une demande de réinitialisation de votre mot de passe. Pour réinitialiser votre mot de passe, cliquez sur le bouton ci-dessous :'
+      reset_button: 'Réinitialiser Mon Mot de Passe'
+      or_copy_link: 'Ou copiez et collez ce lien dans votre navigateur :'
+      expiration_notice: 'Important : Ce lien expirera bientôt !'
+      link_expiration: 'Ce lien de réinitialisation de mot de passe expire le'
+      ignore: 'Si vous n''avez pas demandé une réinitialisation de mot de passe, vous pouvez ignorer cet e-mail en toute sécurité.'
+      not_requested: 'Si vous n''avez pas effectué cette demande, veuillez contacter le support immédiatement.'
+    
+    changed:
+      subject: 'Mot de Passe Modifié avec Succès'
+      title: 'Confirmation de Changement de Mot de Passe'
+      greeting: 'Bonjour'
+      confirmation: 'Cet e-mail confirme que votre mot de passe a été modifié avec succès.'
+      details: 'Détails du changement de mot de passe :'
+      time: 'Modifié à :'
+      not_you: 'Si vous n''avez pas effectué cette modification, veuillez contacter le support immédiatement à'
+  
+  # Application Emails for Candidates
+  application:
+    submitted:
+      subject: 'Candidature Démarrée - Action Requise'
+      title: 'Votre Candidature a Été Démarrée'
+      greeting: 'Bonjour'
+      thank_you: 'Merci d''avoir commencé votre candidature à notre programme.'
+      details: 'Détails de votre candidature :'
+      program: 'Programme'
+      year: 'Année'
+      reference_number: 'Numéro de Référence'
+      next_steps: 'Pour compléter votre candidature, veuillez fournir toutes les informations requises. Votre candidature n''est pas complète tant que vous n''avez pas soumis tous les documents et informations requis.'
+      continue_button: 'Continuer Ma Candidature'
+      deadline_notice: 'Veuillez vous assurer de compléter votre candidature avant la date limite pour être pris en considération pour ce programme.'
+    
+    under_review:
+      subject: 'Candidature Soumise avec Succès'
+      title: 'Candidature en Cours d''Examen'
+      greeting: 'Bonjour'
+      confirmation: 'Merci d''avoir soumis votre candidature. Nous sommes heureux de confirmer que nous avons bien reçu votre candidature complète et qu''elle est maintenant en cours d''examen.'
+      reference_number: 'Numéro de Référence'
+      process_details: 'Notre comité d''examen évaluera soigneusement votre candidature ainsi que toutes les soumissions reçues pour ce programme.'
+      timeline: 'Vous pouvez vous attendre à recevoir une réponse de notre part dans les 3 à 4 semaines concernant le statut de votre candidature.'
+      view_status_button: 'Voir le Statut de la Candidature'
+      contact_info: 'Si vous avez des questions pendant le processus d''examen, veuillez contacter notre équipe de support.'
+    
+    status_change:
+      subject: 'Mise à Jour du Statut de Candidature : %status%'
+      title: 'Mise à Jour du Statut de Candidature'
+      greeting: 'Bonjour'
+      message: 'Il y a eu une mise à jour du statut de votre candidature.'
+      reference_number: 'Numéro de Référence'
+      current_status: 'Statut Actuel'
+      view_details_button: 'Voir les Détails'
+    
+    accepted:
+      subject: 'Félicitations ! Votre Candidature a Été Acceptée'
+      title: 'Candidature Acceptée'
+      greeting: 'Bonjour'
+      congratulations: 'Félicitations ! Nous sommes heureux de vous informer que votre candidature a été acceptée.'
+      details: 'Notre comité de sélection a été impressionné par votre soumission et nous sommes ravis de vous accueillir dans notre programme.'
+      reference_number: 'Numéro de Référence'
+      next_steps_intro: 'Voici les prochaines étapes pour garantir votre place dans le programme :'
+      step1: 'Examinez les détails d''acceptation et les informations du programme'
+      step2: 'Complétez tous les formulaires supplémentaires requis'
+      step3: 'Assistez à la session d''orientation (les détails seront fournis séparément)'
+      next_steps_button: 'Voir les Prochaines Étapes'
+      closing: 'Nous avons hâte de vous accueillir dans notre programme. Félicitations encore pour votre acceptation !'
+    
+    rejected:
+      subject: 'Mise à Jour du Statut de Candidature'
+      title: 'Statut de Candidature'
+      greeting: 'Bonjour'
+      message: 'Merci de votre intérêt pour notre programme. Après un examen attentif de toutes les candidatures, nous regrettons de vous informer que votre candidature n''a pas été sélectionnée pour le programme de cette année.'
+      reference_number: 'Numéro de Référence'
+      feedback_title: 'Retour du Comité de Sélection :'
+      encouragement: 'Nous apprécions votre intérêt pour notre programme et vous encourageons à postuler à nouveau à l''avenir.'
+      future_opportunities: 'Il peut y avoir d''autres opportunités qui correspondent à votre profil et à vos intérêts. Veuillez consulter notre site web pour connaître les autres programmes auxquels vous pourriez être éligible.'
+      opportunities_button: 'Voir les Autres Opportunités'
+      questions: 'Si vous avez des questions, veuillez contacter notre équipe de support à'
+      closing: 'Merci encore de votre intérêt pour notre programme, et nous vous souhaitons beaucoup de succès dans vos futures démarches.'
+    
+    reminder:
+      subject: 'Action Requise : Complétez Votre Candidature'
+      title: 'Complétez Votre Candidature'
+      greeting: 'Bonjour'
+      intro: 'Ceci est un rappel amical que votre candidature est incomplète et nécessite des informations supplémentaires avant de pouvoir être examinée.'
+      reference_number: 'Numéro de Référence'
+      deadline: 'Date Limite de Candidature'
+      missing_items: 'Pour finaliser votre candidature, veuillez vous connecter à votre compte et fournir toutes les informations et documents requis.'
+      complete_button: 'Compléter Ma Candidature'
+      help_offered: 'Si vous avez besoin d''aide pour compléter votre candidature, veuillez contacter notre équipe de support.'
+    
+    revision:
+      subject: 'Action Requise : Révisions Nécessaires pour Votre Candidature'
+      title: 'Demande de Révision de Candidature'
+      greeting: 'Bonjour'
+      intro: 'Merci pour votre candidature. Le comité d''examen a évalué votre soumission et demande quelques révisions ou informations supplémentaires avant de prendre une décision finale.'
+      reference_number: 'Numéro de Référence'
+      feedback_title: 'Retour du Comité d''Examen'
+      deadline: 'Veuillez soumettre vos révisions avant le'
+      instructions: 'Pour mettre à jour votre candidature, veuillez vous connecter à votre compte et effectuer les modifications demandées. Une fois que vous avez terminé les révisions, soumettez votre candidature mise à jour pour examen.'
+      update_button: 'Mettre à Jour Ma Candidature'
+      support: 'Si vous avez des questions ou besoin d''aide concernant les révisions demandées, veuillez contacter notre équipe de support.'
+  
+  # Evaluation Emails for Candidates
+  evaluation:
+    started:
+      subject: 'Votre Candidature est en Cours d''Évaluation'
+      title: 'Évaluation de Candidature en Cours'
+      greeting: 'Bonjour'
+      notification: 'Nous sommes heureux de vous informer que votre candidature est maintenant en cours d''évaluation par notre comité de jury.'
+      reference_number: 'Numéro de Référence'
+      process_details: 'Le processus d''évaluation prend généralement 1 à 2 semaines, pendant lesquelles les membres de notre jury examineront attentivement votre soumission, CV et tous les documents justificatifs.'
+      timeline: 'Vous serez notifié une fois le processus d''évaluation terminé et qu''une décision aura été prise concernant votre candidature.'
+      view_status_button: 'Voir le Statut de la Candidature'
+      no_action: 'Aucune action n''est requise de votre part pour le moment. Nous apprécions votre patience pendant le processus d''évaluation.'
+  
+  # Admin Notification Emails
+  admin:
+    new_submission:
+      subject: 'Nouvelle Soumission de Candidature'
+      title: 'Nouvelle Candidature Reçue'
+      notification: 'Une nouvelle candidature a été soumise à la plateforme.'
+      details: 'Détails de la Candidature :'
+      submission_id: 'ID de Soumission'
+      program: 'Programme'
+      year: 'Année'
+      date_submitted: 'Date de Soumission'
+      current_state: 'État Actuel'
+      applicant_info: 'Informations sur le Candidat'
+      name: 'Nom'
+      email: 'E-mail'
+      institution: 'Institution'
+      field_of_study: 'Domaine d''Étude'
+      view_button: 'Voir la Candidature Complète'
+      login_reminder: 'Veuillez vous connecter au tableau de bord d''administration pour examiner cette candidature.'
+      action_required: 'Veuillez examiner cette nouvelle soumission'
+      review_prompt: 'Cette candidature nécessite votre examen pour passer à l''étape suivante.'
+      application_details: 'Détails de la Candidature'
+      workflow_status: 'Statut Actuel du Workflow'
+      initial_status: 'Statut Initial'
+      next_step: 'Veuillez examiner les détails de la candidature et prendre les mesures appropriées.'
+      graduation_year: 'Année de Diplôme'
+    
+    status_change:
+      subject: 'Changement de Statut de Candidature : %status%'
+      title: 'Changement de Statut de Candidature'
+      notification: 'Le statut d''une candidature a été mis à jour.'
+      submission_id: 'ID de Soumission'
+      new_status: 'Nouveau Statut'
+      change_time: 'Modifié À'
+      applicant_info: 'Informations sur le Candidat'
+      name: 'Nom'
+      email: 'E-mail'
+      view_button: 'Voir la Candidature'
+      action_required: 'Veuillez examiner cette candidature et prendre toutes les mesures nécessaires en fonction du nouveau statut.'
+    
+    evaluation:
+      new:
+        subject: 'Nouvelle Évaluation de Jury Soumise'
+        title: 'Nouvelle Évaluation Reçue'
+        greeting: 'Bonjour'
+        notification: 'Une nouvelle évaluation a été soumise par un membre du jury.'
+        submission_id: 'ID de Soumission'
+        jury_member: 'Membre du Jury'
+        candidate: 'Candidat'
+        date_evaluated: 'Date d''Évaluation'
+        evaluation_details: 'Détails de l''Évaluation'
+        score: 'Note'
+        comments: 'Commentaires'
+        view_evaluation_button: 'Voir les Détails de l''Évaluation'
+        view_submission_button: 'Voir la Soumission Complète'
+      
+      updated:
+        subject: 'Évaluation du Jury Mise à Jour'
+        title: 'Évaluation Mise à Jour'
+        greeting: 'Bonjour'
+        notification: 'Un membre du jury a mis à jour son évaluation.'
+        update_time: 'Mis à jour à'
+        submission_id: 'ID de Soumission'
+        jury_member: 'Membre du Jury'
+        candidate: 'Candidat'
+        evaluation_details: 'Détails de l''Évaluation Mise à Jour'
+        score: 'Note'
+        comments: 'Commentaires'
+        view_evaluation_button: 'Voir l''Évaluation Mise à Jour'
+        view_submission_button: 'Voir la Soumission Complète'
+      
+      completed:
+        subject: 'Toutes les Évaluations Terminées - Décision Requise'
+        title: 'Évaluations Terminées - Décision Requise'
+        greeting: 'Bonjour'
+        notification: 'Toutes les évaluations du jury ont été complétées pour une soumission.'
+        all_evaluations: 'Chaque membre du jury a soumis son évaluation pour cette candidature. La soumission est maintenant prête pour une décision finale.'
+        submission_details: 'Détails de la Soumission'
+        submission_id: 'ID de Soumission'
+        candidate: 'Candidat'
+        evaluation_summary: 'Résumé de l''Évaluation'
+        jury_member: 'Membre du Jury'
+        score: 'Note'
+        date: 'Date de Soumission'
+        average_score: 'Note Moyenne'
+        decision_needed: 'Veuillez examiner toutes les évaluations et prendre une décision finale sur cette candidature.'
+        accept_button: 'Accepter la Candidature'
+        reject_button: 'Rejeter la Candidature'
+        view_details: 'Vous pouvez également consulter toutes les évaluations en détail avant de prendre une décision.'
+        view_all_button: 'Voir le Rapport d''Évaluation Complet'
+        final_note: 'Veuillez prendre votre décision dans les plus brefs délais. Le candidat attend votre réponse.'
+    
+    footer:
+      automated: 'Ceci est une notification administrative automatisée.'

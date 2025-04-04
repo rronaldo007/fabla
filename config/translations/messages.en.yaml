@@ -1,0 +1,303 @@
+# translations/messages.en.yaml
+
+# Authentication and User Management
+auth:
+  email:
+    already_used: 'This email address is already in use.'
+    invalid_token: 'Invalid email validation token.'
+    expired_token: 'Email validation token has expired.'
+    invalid_state: 'Invalid state for email validation.'
+    validation_success: 'Your email has been successfully validated.'
+    verification_resent: 'A new verification email has been sent to your address.'
+    check_inbox: 'Please check your inbox for verification instructions.'
+  password:
+    reset_link_sent: 'Password reset link has been sent to your email.'
+    check_email_for_instructions: 'If an account exists with this email, you will receive password reset instructions.'
+    invalid_reset_token: 'Invalid or expired reset token.'
+    passwords_mismatch: 'Passwords do not match.'
+    reset_success: 'Your password has been reset successfully.'
+    incorrect_current: 'Incorrect current password.'
+    change_success: 'Your password has been successfully changed.'
+  already_logged_in: 'You are already logged in.'
+  invalid_credentials: 'Invalid credentials.'
+  login_required: 'You must be logged in to access this page.'
+
+# Application Process
+apply:
+  edition:
+    not_accepting: 'This edition is not currently accepting applications.'
+  submission:
+    already_exists: 'You already have a submission for this edition.'
+    initial_success: 'Your initial application has been submitted successfully. Please complete all required information to finalize your application.'
+    complete_success: 'Application submitted successfully. It is now under review.'
+  error:
+    profile_not_found: 'User profile not found.'
+    submission_not_found: 'The requested submission does not exist.'
+    no_active_submission: 'No active submission found.'
+    login_required: 'Login required to access this page.'
+  admin:
+    submission_approved: 'Submission has been approved successfully.'
+    submission_rejected: 'Submission has been rejected.'
+    reminder_sent: 'Reminder email has been sent to the applicant.'
+
+# Submission Management
+submission:
+  not_found: 'Submission not found.'
+  accepted: 'Submission has been accepted.'
+  rejected: 'Submission has been rejected.'
+  revision_requested: 'Revision has been requested from the applicant.'
+  revision_details_required: 'Please provide details about what needs to be revised.'
+
+# Evaluation
+evaluation:
+  success:
+    created: 'Evaluation has been successfully created.'
+    updated: 'Evaluation has been successfully updated.'
+  completed: 'All evaluations are now complete for this submission.'
+  average_score: 'Average Score'
+  jury_notes: 'Jury Notes'
+  score_distribution: 'Score Distribution'
+
+# Email Templates - Generic Elements
+email:
+  footer:
+    no_reply: 'This is an automated message. Please do not reply directly to this email.'
+    all_rights: 'All rights reserved.'
+    confidential: 'This email contains confidential information. Please do not forward or share its contents.'
+  
+  # Registration and Authentication Emails
+  registration:
+    subject: 'Confirm Your Registration'
+    welcome: 'Welcome to FabLab Platform'
+    greeting: 'Hello'
+    thank_you: 'Thank you for registering with the FabLab Platform. We're excited to have you join our community.'
+    please_confirm: 'To complete your registration, please confirm your email address by clicking the button below:'
+    confirm_button: 'Confirm My Email'
+    or_copy_link: 'Or copy and paste this link in your browser:'
+    link_expiration: 'This confirmation link expires on'
+    ignore: 'If you did not create an account, you can safely ignore this email.'
+  
+  validation:
+    success:
+      subject: 'Email Successfully Validated'
+      title: 'Email Validation Complete'
+      greeting: 'Hello'
+      confirmed: 'Your email has been successfully validated.'
+      account_ready: 'Your account is now active. You can now log in and access all platform features.'
+      login_button: 'Log In Now'
+      questions: 'If you have any questions, please contact our support team.'
+  
+  password:
+    reset:
+      subject: 'Password Reset Request'
+      title: 'Reset Your Password'
+      greeting: 'Hello'
+      received_request: 'We received a request to reset your password. To reset your password, click the button below:'
+      reset_button: 'Reset My Password'
+      or_copy_link: 'Or copy and paste this link in your browser:'
+      expiration_notice: 'Important: This link will expire soon!'
+      link_expiration: 'This password reset link expires on'
+      ignore: 'If you did not request a password reset, you can safely ignore this email.'
+      not_requested: 'If you did not make this request, please contact support immediately.'
+    
+    changed:
+      subject: 'Password Changed Successfully'
+      title: 'Password Change Confirmation'
+      greeting: 'Hello'
+      confirmation: 'This email confirms that your password has been changed successfully.'
+      details: 'Password Change Details:'
+      time: 'Changed at:'
+      not_you: 'If you did not make this change, please contact support immediately at'
+  
+  # Application Emails for Candidates
+  application:
+    submitted:
+      subject: 'Application Started - Action Required'
+      title: 'Your Application Has Been Started'
+      greeting: 'Hello'
+      thank_you: 'Thank you for starting your application to our program.'
+      details: 'Your application details:'
+      program: 'Program'
+      year: 'Year'
+      reference_number: 'Reference Number'
+      next_steps: 'To complete your application, please provide all required information. Your application is not complete until you submit all required documents and information.'
+      continue_button: 'Continue My Application'
+      deadline_notice: 'Please ensure that you complete your application before the deadline to be considered for this program.'
+    
+    under_review:
+      subject: 'Application Submitted Successfully'
+      title: 'Application Under Review'
+      greeting: 'Hello'
+      confirmation: 'Thank you for submitting your application. We are pleased to confirm that we have received your complete application and it is now under review.'
+      reference_number: 'Reference Number'
+      process_details: 'Our review committee will carefully evaluate your application along with all submissions received for this program.'
+      timeline: 'You can expect to hear back from us within 3-4 weeks regarding the status of your application.'
+      view_status_button: 'View Application Status'
+      contact_info: 'If you have any questions during the review process, please contact our support team.'
+    
+    status_change:
+      subject: 'Application Status Update: %status%'
+      title: 'Application Status Update'
+      greeting: 'Hello'
+      message: 'There has been an update to the status of your application.'
+      reference_number: 'Reference Number'
+      current_status: 'Current Status'
+      view_details_button: 'View Details'
+    
+    accepted:
+      subject: 'Congratulations! Your Application Has Been Accepted'
+      title: 'Application Accepted'
+      greeting: 'Hello'
+      congratulations: 'Congratulations! We are pleased to inform you that your application has been accepted.'
+      details: 'Our selection committee was impressed with your submission and we are excited to welcome you to our program.'
+      reference_number: 'Reference Number'
+      next_steps_intro: 'Here are the next steps to secure your place in the program:'
+      step1: 'Review the acceptance details and program information'
+      step2: 'Complete any additional required forms'
+      step3: 'Attend the orientation session (details will be provided separately)'
+      next_steps_button: 'View Next Steps'
+      closing: 'We look forward to welcoming you to our program. Congratulations again on your acceptance!'
+    
+    rejected:
+      subject: 'Application Status Update'
+      title: 'Application Status'
+      greeting: 'Hello'
+      message: 'Thank you for your interest in our program. After careful review of all applications, we regret to inform you that your application was not selected for this year's program.'
+      reference_number: 'Reference Number'
+      feedback_title: 'Feedback from the Selection Committee:'
+      encouragement: 'We appreciate your interest in our program and encourage you to apply again in the future.'
+      future_opportunities: 'There may be other opportunities that match your profile and interests. Please check our website for other programs you might be eligible for.'
+      opportunities_button: 'View Other Opportunities'
+      questions: 'If you have any questions, please contact our support team at'
+      closing: 'Thank you again for your interest in our program, and we wish you success in your future endeavors.'
+    
+    reminder:
+      subject: 'Action Required: Complete Your Application'
+      title: 'Complete Your Application'
+      greeting: 'Hello'
+      intro: 'This is a friendly reminder that your application is incomplete and requires additional information before it can be reviewed.'
+      reference_number: 'Reference Number'
+      deadline: 'Application Deadline'
+      missing_items: 'To finalize your application, please log in to your account and provide all required information and documents.'
+      complete_button: 'Complete My Application'
+      help_offered: 'If you need assistance completing your application, please contact our support team.'
+    
+    revision:
+      subject: 'Action Required: Revisions Needed for Your Application'
+      title: 'Application Revision Request'
+      greeting: 'Hello'
+      intro: 'Thank you for your application. The review committee has evaluated your submission and is requesting some revisions or additional information before making a final decision.'
+      reference_number: 'Reference Number'
+      feedback_title: 'Feedback from the Review Committee'
+      deadline: 'Please submit your revisions by'
+      instructions: 'To update your application, please log in to your account and make the requested changes. Once you have completed the revisions, submit your updated application for review.'
+      update_button: 'Update My Application'
+      support: 'If you have any questions or need assistance with the requested revisions, please contact our support team.'
+  
+  # Evaluation Emails for Candidates
+  evaluation:
+    started:
+      subject: 'Your Application is Under Evaluation'
+      title: 'Application Evaluation in Progress'
+      greeting: 'Hello'
+      notification: 'We are pleased to inform you that your application is now being evaluated by our jury committee.'
+      reference_number: 'Reference Number'
+      process_details: 'The evaluation process typically takes 1-2 weeks, during which time our jury members will carefully review your submission, CV, and all supporting documents.'
+      timeline: 'You will be notified once the evaluation process is complete and a decision has been made regarding your application.'
+      view_status_button: 'View Application Status'
+      no_action: 'No action is required from you at this time. We appreciate your patience during the evaluation process.'
+  
+  # Admin Notification Emails
+  admin:
+    new_submission:
+      subject: 'New Application Submission'
+      title: 'New Application Received'
+      notification: 'A new application has been submitted to the platform.'
+      details: 'Application Details:'
+      submission_id: 'Submission ID'
+      program: 'Program'
+      year: 'Year'
+      date_submitted: 'Date Submitted'
+      current_state: 'Current State'
+      applicant_info: 'Applicant Information'
+      name: 'Name'
+      email: 'Email'
+      institution: 'Institution'
+      field_of_study: 'Field of Study'
+      view_button: 'View Full Application'
+      login_reminder: 'Please log in to the admin dashboard to review this application.'
+      action_required: 'Please review this new submission'
+      review_prompt: 'This application requires your review to proceed to the next step.'
+      application_details: 'Application Details'
+      workflow_status: 'Current Workflow Status'
+      initial_status: 'Initial Status'
+      next_step: 'Please review the application details and take appropriate action.'
+      graduation_year: 'Graduation Year'
+    
+    status_change:
+      subject: 'Application Status Change: %status%'
+      title: 'Application Status Change'
+      notification: 'An application status has been updated.'
+      submission_id: 'Submission ID'
+      new_status: 'New Status'
+      change_time: 'Changed At'
+      applicant_info: 'Applicant Information'
+      name: 'Name'
+      email: 'Email'
+      view_button: 'View Application'
+      action_required: 'Please review this application and take any necessary actions based on the new status.'
+    
+    evaluation:
+      new:
+        subject: 'New Jury Evaluation Submitted'
+        title: 'New Evaluation Received'
+        greeting: 'Hello'
+        notification: 'A new evaluation has been submitted by a jury member.'
+        submission_id: 'Submission ID'
+        jury_member: 'Jury Member'
+        candidate: 'Candidate'
+        date_evaluated: 'Date Evaluated'
+        evaluation_details: 'Evaluation Details'
+        score: 'Score'
+        comments: 'Comments'
+        view_evaluation_button: 'View Evaluation Details'
+        view_submission_button: 'View Full Submission'
+      
+      updated:
+        subject: 'Jury Evaluation Updated'
+        title: 'Evaluation Updated'
+        greeting: 'Hello'
+        notification: 'A jury member has updated their evaluation.'
+        update_time: 'Updated at'
+        submission_id: 'Submission ID'
+        jury_member: 'Jury Member'
+        candidate: 'Candidate'
+        evaluation_details: 'Updated Evaluation Details'
+        score: 'Score'
+        comments: 'Comments'
+        view_evaluation_button: 'View Updated Evaluation'
+        view_submission_button: 'View Full Submission'
+      
+      completed:
+        subject: 'All Evaluations Completed - Decision Required'
+        title: 'Evaluations Complete - Decision Required'
+        greeting: 'Hello'
+        notification: 'All jury evaluations have been completed for a submission.'
+        all_evaluations: 'Every jury member has submitted their evaluation for this application. The submission is now ready for a final decision.'
+        submission_details: 'Submission Details'
+        submission_id: 'Submission ID'
+        candidate: 'Candidate'
+        evaluation_summary: 'Evaluation Summary'
+        jury_member: 'Jury Member'
+        score: 'Score'
+        date: 'Date Submitted'
+        average_score: 'Average Score'
+        decision_needed: 'Please review all evaluations and make a final decision on this application.'
+        accept_button: 'Accept Application'
+        reject_button: 'Reject Application'
+        view_details: 'You can also view all evaluations in detail before making a decision.'
+        view_all_button: 'View Complete Evaluation Report'
+        final_note: 'Please make your decision at your earliest convenience. The candidate is waiting for your response.'
+    
+    footer:
+      automated: 'This is an automated admin notification.'

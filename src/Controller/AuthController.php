@@ -18,9 +18,23 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Mime\Email;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class AuthController extends AbstractController
 {
+    private $emailService;
+    private $translator;
+    
+    public function __construct(EmailService $emailService, TranslatorInterface $translator)
+    {
+        $this->emailService = $emailService;
+        $this->translator = $translator;
+    }
+
     #[Route('/registration', name: 'app_registration')]
     public function registration(
         Request $request,
@@ -35,7 +49,7 @@ final class AuthController extends AbstractController
             $email = $form->get('email')->getData();
             
             if ($em->getRepository(User::class)->findOneBy(['email' => $email])) {
-                $this->addFlash('danger', 'Le mail est déjà utilisé.');
+                $this->addFlash('danger', $this->translator->trans('auth.email.already_used'));
                 return $this->render('auth/user_registration.html.twig', [
                     'form' => $form->createView(),
                 ]);
@@ -56,9 +70,12 @@ final class AuthController extends AbstractController
     
             // Flush all changes (user and workflow state)
             $em->flush();
+            
+            // Send confirmation email using the service
+            $this->emailService->sendRegistrationConfirmationEmail($user);
     
-            $this->addFlash('success', 'Votre compte a été créé avec succès. Un email de confirmation vous a été envoyé.');
-            return $this->redirectToRoute('app_login', ['id' => $user->getId()]);
+            $this->addFlash('success', $this->translator->trans('auth.registration.success'));
+            return $this->redirectToRoute('app_login');
         }
     
         return $this->render('auth/user_registration.html.twig', [
@@ -66,48 +83,47 @@ final class AuthController extends AbstractController
         ]);
     }
 
-     #[Route('/validate-email/{token}', name: 'app_validate_email')]
-     public function validateEmail(
-         string $token,
-         EntityManagerInterface $em,
-         UserWorkflowService $workflowService,
-         EmailService $emailService
-     ): Response {
-         $user = $em->getRepository(User::class)->findOneBy(['emailValidationToken' => $token]);
-         
-         if (!$user) {
-             return new Response('Invalid validation token.', Response::HTTP_NOT_FOUND);
-         }
-         
-         if ($user->getEmailValidationTokenExpiresAt() < new \DateTime()) {
-             return new Response('Validation token has expired.', Response::HTTP_GONE);
-         }
-     
-         $initialState = new WorkflowState();
-         $initialState->setState($user->getCurrentPlace());
-         $initialState->setUser($user);
-         $em->persist($initialState);
-         
-         $user->setIsValidated(true)
-             ->setEmailValidationToken(null)
-             ->setEmailValidationTokenExpiresAt(null);
-         
-         if ($workflowService->applyTransition($user, 'validate_email')) {
-             $em->flush();
-             $emailService->sendEmailValidationSuccessNotification($user);
-             return $this->redirectToRoute('app_login');
-         }
-         
-         return new Response('Invalid state for email validation.', Response::HTTP_BAD_REQUEST);
-     }
+    #[Route('/validate-email/{token}', name: 'app_validate_email')]
+    public function validateEmail(
+        string $token,
+        EntityManagerInterface $em,
+        UserWorkflowService $workflowService,
+        EmailService $emailService
+    ): Response {
+        $user = $em->getRepository(User::class)->findOneBy(['emailValidationToken' => $token]);
+        
+        if (!$user) {
+            return new Response('Invalid validation token.', Response::HTTP_NOT_FOUND);
+        }
+        
+        if ($user->getEmailValidationTokenExpiresAt() < new \DateTime()) {
+            return new Response('Validation token has expired.', Response::HTTP_GONE);
+        }
+    
+        $initialState = new WorkflowState();
+        $initialState->setState($user->getCurrentPlace());
+        $initialState->setUser($user);
+        $em->persist($initialState);
+        
+        $user->setIsValidated(true)
+            ->setEmailValidationToken(null)
+            ->setEmailValidationTokenExpiresAt(null);
+        
+        if ($workflowService->applyTransition($user, 'validate_email')) {
+            $em->flush();
+            $emailService->sendEmailValidationSuccessNotification($user);
+            return $this->redirectToRoute('app_login');
+        }
+        
+        return new Response('Invalid state for email validation.', Response::HTTP_BAD_REQUEST);
+    }
 
     #[Route('/login', name: 'app_login')]
     public function login(
-        AuthenticationUtils $authenticationUtils,
-        EntityManagerInterface $em
+        AuthenticationUtils $authenticationUtils
     ): Response {
         if ($this->getUser()) {
-            $this->addFlash('info', 'You are already logged in.');
+            $this->addFlash('info', $this->translator->trans('auth.already_logged_in'));
             return $this->redirectToRoute('app_home');
         }
 
@@ -115,9 +131,7 @@ final class AuthController extends AbstractController
         $lastUsername = $authenticationUtils->getLastUsername();
 
         if ($error) {
-            $this->addFlash('danger', 'Identifiants invalides.');
-        } else if ($this->getUser()) {
-            $this->addFlash('success', 'Bienvenue ' . $this->getUser()->getEmail());
+            $this->addFlash('danger', $this->translator->trans('auth.invalid_credentials'));
         }
 
         return $this->render('auth/login.html.twig', [
@@ -133,8 +147,10 @@ final class AuthController extends AbstractController
     }
 
     #[Route('/forgot-password', name: 'app_forgot_password')]
-    public function forgotPassword(Request $request, EntityManagerInterface $em, \Symfony\Component\Mailer\MailerInterface $mailer): Response
-    {
+    public function forgotPassword(
+        Request $request, 
+        EntityManagerInterface $em
+    ): Response {
         $form = $this->createForm(ForgotPasswordType::class);
         $form->handleRequest($request);
 
@@ -149,21 +165,17 @@ final class AuthController extends AbstractController
 
                 $em->flush();
 
-                // Send Email with Reset Link
-                $email = (new \Symfony\Component\Mime\Email())
-                    ->from('no-reply@fablab.com')
-                    ->to($user->getEmail())
-                    ->subject('Password Reset Request')
-                    ->html('<p>Click <a href="http://localhost:8000/reset-password/' . $resetToken . '">here</a> to reset your password.</p>');
+                // Send the password reset email using the dedicated service
+                $this->emailService->sendPasswordResetEmail($user);
 
-                $mailer->send($email);
-
-                $this->addFlash('success', 'Password reset link has been sent to your email.');
+                $this->addFlash('success', $this->translator->trans('auth.password.reset_link_sent'));
             } else {
-                $this->addFlash('danger', 'No account found with this email.');
+                // Don't reveal whether a user exists to prevent enumeration attacks
+                $this->addFlash('info', $this->translator->trans('auth.password.check_email_for_instructions'));
             }
 
-            return $this->redirectToRoute('app_forgot_password');
+            // Always redirect to avoid timing attacks
+            return $this->redirectToRoute('app_login');
         }
 
         return $this->render('auth/forgot_password.html.twig', [
@@ -172,12 +184,16 @@ final class AuthController extends AbstractController
     }
 
     #[Route('/reset-password/{token}', name: 'app_reset_password')]
-    public function resetPassword(string $token, Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher): Response
-    {
+    public function resetPassword(
+        string $token, 
+        Request $request, 
+        EntityManagerInterface $em, 
+        UserPasswordHasherInterface $passwordHasher
+    ): Response {
         $user = $em->getRepository(User::class)->findOneBy(['resetPasswordToken' => $token]);
 
         if (!$user || $user->getResetPasswordTokenExpiresAt() < new \DateTime()) {
-            $this->addFlash('danger', 'Invalid or expired reset token.');
+            $this->addFlash('danger', $this->translator->trans('auth.password.invalid_reset_token'));
             return $this->redirectToRoute('app_forgot_password');
         }
 
@@ -186,12 +202,6 @@ final class AuthController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $newPassword = $form->get('new_password')->getData();
-            $confirmPassword = $form->get('confirm_password')->getData();
-
-            if ($newPassword !== $confirmPassword) {
-                $this->addFlash('danger', 'Passwords do not match.');
-                return $this->redirectToRoute('app_reset_password', ['token' => $token]);
-            }
 
             $hashedPassword = $passwordHasher->hashPassword($user, $newPassword);
             $user->setPassword($hashedPassword);
@@ -199,23 +209,30 @@ final class AuthController extends AbstractController
             $user->setResetPasswordTokenExpiresAt(null);
 
             $em->flush();
+            
+            // Send password changed confirmation
+            $this->emailService->sendPasswordChangedConfirmation($user);
 
-            $this->addFlash('success', 'Your password has been reset successfully.');
+            $this->addFlash('success', $this->translator->trans('auth.password.reset_success'));
             return $this->redirectToRoute('app_login');
         }
 
         return $this->render('auth/reset_password.html.twig', [
             'form' => $form->createView(),
+            'token' => $token
         ]);
     }
 
     #[Route('/change-password', name: 'app_change_password')]
-    public function changePassword(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher): Response
-    {
+    public function changePassword(
+        Request $request, 
+        EntityManagerInterface $em, 
+        UserPasswordHasherInterface $passwordHasher
+    ): Response {
         $user = $this->getUser();
         
         if (!$user) {
-            $this->addFlash('danger', 'You must be logged in to change your password.');
+            $this->addFlash('danger', $this->translator->trans('auth.login_required'));
             return $this->redirectToRoute('app_login');
         }
 
@@ -226,25 +243,61 @@ final class AuthController extends AbstractController
 
             // Verify old password
             if (!$passwordHasher->isPasswordValid($user, $oldPassword)) {
-                $this->addFlash('danger', 'Incorrect current password.');
+                $this->addFlash('danger', $this->translator->trans('auth.password.incorrect_current'));
                 return $this->redirectToRoute('app_change_password');
             }
 
             // Check if new passwords match
             if ($newPassword !== $confirmPassword) {
-                $this->addFlash('danger', 'New passwords do not match.');
+                $this->addFlash('danger', $this->translator->trans('auth.password.passwords_mismatch'));
                 return $this->redirectToRoute('app_change_password');
             }
 
             // Set new password
             $user->setPassword($passwordHasher->hashPassword($user, $newPassword));
             $em->flush();
+            
+            // Send password changed confirmation
+            $this->emailService->sendPasswordChangedConfirmation($user);
 
-            $this->addFlash('success', 'Your password has been successfully changed.');
+            $this->addFlash('success', $this->translator->trans('auth.password.change_success'));
             return $this->redirectToRoute('app_home');
         }
 
         return $this->render('auth/change_password.html.twig');
     }
 
+    #[Route('/resend-verification-email', name: 'app_resend_verification')]
+    public function resendVerificationEmail(Request $request, EntityManagerInterface $em): Response
+    {
+        $form = $this->createForm(ForgotPasswordType::class); // Reusing the same form type
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $email = $form->get('email')->getData();
+            $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
+
+            if ($user && !$user->getIsValidated()) {
+                // Generate a new token
+                $user->setEmailValidationToken(bin2hex(random_bytes(32)))
+                    ->setEmailValidationTokenExpiresAt(new \DateTime('+24 hours'));
+
+                $em->flush();
+
+                // Send the verification email
+                $this->emailService->sendRegistrationConfirmationEmail($user);
+
+                $this->addFlash('success', $this->translator->trans('auth.email.verification_resent'));
+            } else {
+                // Don't reveal specific information
+                $this->addFlash('info', $this->translator->trans('auth.email.check_inbox'));
+            }
+
+            return $this->redirectToRoute('app_login');
+        }
+
+        return $this->render('auth/resend_verification.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
 }

@@ -72,19 +72,16 @@ class AdministratorController extends AbstractController
             );
             $admin->setPassword($hashedPassword);
 
-            // Set admin role
             $adminRole = $this->roleRepository->findOneBy(['name' => 'ROLE_ADMIN']);
             if (!$adminRole) {
                 throw $this->createNotFoundException('Admin role not found');
             }
             
-            // Set required fields
             $admin->setRole($adminRole);
             $admin->setIsActive(true);
             $admin->setIsValidated(true);
             $admin->setCurrentPlace('Active');
 
-            // Save to database
             $this->entityManager->persist($admin);
             $this->entityManager->flush();
 

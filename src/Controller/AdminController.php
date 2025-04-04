@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Entity\SubmissionWorkflow;
 use App\Entity\Submission;
 use App\Repository\SubmissionRepository;
@@ -41,7 +42,6 @@ final class AdminController extends AbstractController
     public function listCandidates(): Response
     {
 
-        // Fetch all submissions
         $submissions = $this->entityManager->getRepository(Submission::class)->findAll();
 
         return $this->render('admin/candidates_list.html.twig', [
@@ -52,7 +52,6 @@ final class AdminController extends AbstractController
     #[Route('/admin/selected_candidates', name: 'admin_selected_candidates')]
     public function selectedCandidates(SubmissionRepository $submissionRepository): Response
     {
-        // Fetch candidates whose submissions are accepted
         $submissions = $submissionRepository->findBy([
             'isCandidateAccepted' => true,
         ]);
@@ -63,7 +62,7 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/admin/candidate/{id}', name: 'admin_view_candidate')]
-    public function viewCandidate(int $id, SubmissionRepository $submissionRepository): Response
+    public function viewCandidate(int $id, SubmissionRepository $submissionRepository, UserRepository $userRepository): Response
     {
         $query = $this->entityManager->createQuery("
             SELECT s, c, p, u, e, sw, ws FROM App\Entity\Submission s
@@ -75,16 +74,20 @@ final class AdminController extends AbstractController
             LEFT JOIN u.workflowStates ws
             WHERE s.id = :id
         ")->setParameter('id', $id);
-
+    
         $submission = $query->getOneOrNullResult();
-
+    
         if (!$submission) {
             $this->addFlash('danger', 'Candidate not found.');
-            return $this->redirectToRoute('admin_candidates'); // Redirect to the candidate list or another relevant page
+            return $this->redirectToRoute('admin_candidates');
         }
-
+        
+        $juryCount = $userRepository->countByRole('ROLE_JURY');
+        
+        
         return $this->render('admin/candidate_profile.html.twig', [
             'submission' => $submission,
+            'jury_count' => $juryCount,
         ]);
     }
 
@@ -92,53 +95,53 @@ final class AdminController extends AbstractController
     public function acceptCandidate(int $id, EntityManagerInterface $entityManager, UserRepository $userRepository): Response
     {
         $submission = $entityManager->getRepository(Submission::class)->find($id);
-
+        
         if (!$submission) {
             throw $this->createNotFoundException('Candidate submission not found.');
         }
-
-        // Check if all jury members have evaluated
-        $juryMembers = $userRepository->findByRoleName('ROLE_JURY');
-        $totalJuryCount = count($juryMembers);
-        $juryEvaluations = array_filter(
-            $submission->getEvaluations()->toArray(),
-            function ($evaluation) {
-                $jury = $evaluation->getJury();
         
-                // Ensure jury is not null, has the correct role, is active, and is not archived
-                return $jury !== null 
-                    && in_array('ROLE_JURY', $jury->getRoles()) 
-                    && $jury->isActive() // Check if the user is active
-                    && (!$jury->getUserProfile() || !$jury->getUserProfile()->isArchived()); // Ensure not archived
+        // Get active jury members count
+        $totalJuryCount = $userRepository->countByRoleName('ROLE_JURY');
+        
+        // Count unique jury evaluations
+        $evaluatedJuryIds = [];
+        foreach ($submission->getEvaluations() as $evaluation) {
+            $jury = $evaluation->getJury();
+            if ($jury !== null && 
+                $jury->getRole()->getName() === 'ROLE_JURY' && 
+                $jury->isActive()) {
+                $evaluatedJuryIds[$jury->getId()] = true;
             }
-        );
-        // dd($juryEvaluations, $totalJuryCount);
-        $evaluatedJuryCount = count($juryEvaluations);
-
-        if ($evaluatedJuryCount != $totalJuryCount) {
+        }
+        $evaluatedJuryCount = count($evaluatedJuryIds);
+        
+        // Debug info
+        $this->addFlash('info', "Evaluations: $evaluatedJuryCount of $totalJuryCount juries");
+        
+        if ($evaluatedJuryCount < $totalJuryCount) {
             $this->addFlash('warning', 'All jury members must evaluate before making a decision.');
             return $this->redirectToRoute('admin_view_candidate', ['id' => $id]);
         }
-
+        
         // Prevent re-accepting an already accepted candidate
         if ($submission->isCandidateAccepted()) {
             $this->addFlash('warning', 'This candidate has already been accepted.');
             return $this->redirectToRoute('admin_view_candidate', ['id' => $id]);
         }
-
+        
         // Accept the candidate
         $submission->setIsCandidateAccepted(true);
         $submission->setCurrentState('candidate_approved');
-
+        
         // Log the workflow state
         $workflow = new SubmissionWorkflow();
         $workflow->setSubmission($submission);
         $workflow->setState('candidate_approved');
         $workflow->setTransltionedAt(new \DateTime());
-
+        
         $entityManager->persist($workflow);
         $entityManager->flush();
-
+        
         $this->addFlash('success', 'Candidate has been successfully accepted.');
         return $this->redirectToRoute('admin_view_candidate', ['id' => $id]);
     }
@@ -152,7 +155,6 @@ final class AdminController extends AbstractController
             throw $this->createNotFoundException('Candidate submission not found.');
         }
 
-        // Check if all jury members have evaluated
         $juryMembers = $userRepository->findByRoleName('ROLE_JURY');
         $totalJuryCount = count($juryMembers);
         $juryEvaluations = array_filter(
@@ -160,14 +162,12 @@ final class AdminController extends AbstractController
             function ($evaluation) {
                 $jury = $evaluation->getJury();
         
-                // Ensure jury is not null, has the correct role, is active, and is not archived
                 return $jury !== null 
                     && in_array('ROLE_JURY', $jury->getRoles()) 
                     && $jury->isActive() // Check if the user is active
                     && (!$jury->getUserProfile() || !$jury->getUserProfile()->isArchived()); // Ensure not archived
             }
         );
-        // dd($juryEvaluations, $totalJuryCount);
         $evaluatedJuryCount = count($juryEvaluations);
 
         if ($evaluatedJuryCount != $totalJuryCount) {
@@ -175,17 +175,14 @@ final class AdminController extends AbstractController
             return $this->redirectToRoute('admin_view_candidate', ['id' => $id]);
         }
 
-        // Prevent re-rejecting an already rejected candidate
         if (!$submission->isCandidateAccepted()) {
             $this->addFlash('warning', 'This candidate has already been rejected.');
             return $this->redirectToRoute('admin_view_candidate', ['id' => $id]);
         }
 
-        // Reject the candidate
         $submission->setIsCandidateAccepted(false);
         $submission->setCurrentState('candidate_rejected');
 
-        // Log the workflow state
         $workflow = new SubmissionWorkflow();
         $workflow->setSubmission($submission);
         $workflow->setState('candidate_rejected');
